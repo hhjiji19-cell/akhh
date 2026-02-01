@@ -1,7 +1,4 @@
-import streamlit as st
-import base64
-
-# Page configuration
+import streamlit as st          st.markdowne configuration
 st.set_page_config(
     page_title="My Valentine ❤️",
     page_icon="❤️",
@@ -9,7 +6,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS
+# Custom CSS with all fixes
 def local_css():
     st.markdown("""
     <style>
@@ -61,6 +58,26 @@ def local_css():
     
     .envelope:hover {
         transform: scale(1.1);
+    }
+    
+    /* Envelope open button */
+    .open-btn {
+        background: linear-gradient(45deg, #ff69b4, #ff1493);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+    
+    .open-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(255, 105, 180, 0.5);
     }
     
     /* Question text styling - DARK PINK */
@@ -118,10 +135,34 @@ def local_css():
         position: relative;
     }
     
-    /* Hide Streamlit default elements */
+    /* Hide audio player and Streamlit default elements */
+    audio {
+        display: none !important;
+    }
+    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    
+    /* Music button */
+    .music-play-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #FF4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
     
     /* GIF styling */
     .gif-container {
@@ -139,6 +180,72 @@ def local_css():
     </style>
     """, unsafe_allow_html=True)
 
+def autoplay_audio():
+    """Create audio autoplay"""
+    try:
+        # Read and encode the audio file
+        with open("music.mp3", "rb") as f:
+            audio_bytes = f.read()
+            b64 = base64.b64encode(audio_bytes).decode()
+        
+        # Create audio element
+        audio_html = f"""
+        <audio id="valentineMusic" loop style="display: none;">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+        
+        <button id="musicButton" class="music-play-button" onclick="toggleMusic()">🎵</button>
+        
+        <script>
+            const audio = document.getElementById('valentineMusic');
+            const musicButton = document.getElementById('musicButton');
+            let isPlaying = false;
+            
+            function toggleMusic() {{
+                if (isPlaying) {{
+                    audio.pause();
+                    musicButton.innerHTML = '🎵';
+                    musicButton.style.background = '#FF4444';
+                }} else {{
+                    audio.volume = 0.7;
+                    audio.play();
+                    musicButton.innerHTML = '🔊';
+                    musicButton.style.background = '#4CAF50';
+                }}
+                isPlaying = !isPlaying;
+            }}
+            
+            // Try to play automatically
+            function playMusic() {{
+                if (audio) {{
+                    audio.volume = 0.7;
+                    const playPromise = audio.play();
+                    
+                    if (playPromise !== undefined) {{
+                        playPromise
+                            .then(_ => {{
+                                isPlaying = true;
+                                musicButton.innerHTML = '🔊';
+                                musicButton.style.background = '#4CAF50';
+                            }})
+                            .catch(error => {{
+                                musicButton.innerHTML = '▶️';
+                                musicButton.style.background = '#FF4444';
+                                musicButton.title = "Click to play music";
+                            }});
+                    }}
+                }}
+            }}
+            
+            // Try to play on load
+            window.addEventListener('load', playMusic);
+            setTimeout(playMusic, 1000);
+        </script>
+        """
+        return audio_html
+    except Exception as e:
+        return f"<!-- Audio error: {str(e)} -->"
+
 # Initialize session state
 if 'page' not in st.session_state:
     st.session_state.page = 'landing'
@@ -146,57 +253,8 @@ if 'page' not in st.session_state:
 # Apply custom CSS
 local_css()
 
-# ---------- DIRECT MUSIC AUTOPLAY ----------
-# Load the music file directly
-try:
-    # Read the music file
-    with open("music.mp3", "rb") as f:
-        audio_bytes = f.read()
-    
-    # Encode to base64
-    b64 = base64.b64encode(audio_bytes).decode()
-    
-    # Create HTML audio element with autoplay
-    audio_html = f"""
-    <audio id="valentineMusic" autoplay loop style="display: none;">
-        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-    </audio>
-    
-    <script>
-    // Get the audio element
-    var audio = document.getElementById('valentineMusic');
-    
-    // Set volume
-    audio.volume = 0.7;
-    
-    // Try to play immediately
-    audio.play().catch(function(e) {{
-        console.log("Autoplay failed initially:", e);
-    }});
-    
-    // Play on any user interaction
-    document.addEventListener('click', function playOnInteraction() {{
-        if (audio.paused) {{
-            audio.play();
-        }}
-        // Remove listener after first successful play
-        document.removeEventListener('click', playOnInteraction);
-    }});
-    </script>
-    """
-    
-    # Add the audio to the page
-    st.markdown(audio_html, unsafe_allow_html=True)
-    
-except Exception as e:
-    st.error(f"Could not load music.mp3: {e}")
-    # Add fallback silent audio to avoid errors
-    st.markdown("""
-    <audio id="valentineMusic" style="display: none;"></audio>
-    <script>
-    console.log("Music file not found");
-    </script>
-    """, unsafe_allow_html=True)
+# Add background music
+st.markdown(autoplay_audio(), unsafe_allow_html=True)
 
 # Main app logic
 if st.session_state.page == 'landing':
@@ -306,53 +364,3 @@ elif st.session_state.page == 'no_response':
             st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)
-
-# Add a simple play button as last resort
-st.markdown("""
-<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <button onclick="playValentineMusic()" style="
-        background: #FF4444;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-        cursor: pointer;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    " title="Play music">▶️</button>
-</div>
-
-<script>
-function playValentineMusic() {
-    var audio = document.getElementById('valentineMusic');
-    if (audio) {
-        audio.play();
-        // Change button to pause
-        event.target.innerHTML = '⏸️';
-        event.target.title = "Pause music";
-        event.target.onclick = function() {
-            audio.pause();
-            this.innerHTML = '▶️';
-            this.title = "Play music";
-            this.onclick = playValentineMusic;
-        };
-    }
-}
-
-// Also try to play when user clicks ANY button
-document.addEventListener('click', function(e) {
-    if (e.target.tagName === 'BUTTON') {
-        var audio = document.getElementById('valentineMusic');
-        if (audio && audio.paused) {
-            setTimeout(function() {
-                audio.play();
-            }, 100);
-        }
-    }
-});
-</script>
-""", unsafe_allow_html=True)
