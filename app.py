@@ -1,4 +1,7 @@
-import streamlit as st          st.markdowne configuration
+import streamlit as st
+import base64
+
+# Page configuration
 st.set_page_config(
     page_title="My Valentine ❤️",
     page_icon="❤️",
