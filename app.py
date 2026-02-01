@@ -6,42 +6,55 @@ st.set_page_config(page_title="Valentine 💖", layout="wide")
 # ---------- SESSION STATE ----------
 if "stage" not in st.session_state:
     st.session_state.stage = "landing"
+if "envelope_opened" not in st.session_state:
+    st.session_state.envelope_opened = False
+if "music_started" not in st.session_state:
+    st.session_state.music_started = False
 
 # ---------- AUTOPLAY MUSIC ----------
 def autoplay_audio():
-    # Reads your music.mp3 and embeds it
-    with open("music.mp3", "rb") as f:
-        data = f.read()
-        b64 = base64.b64encode(data).decode()
-
-    st.markdown(f"""
-    <audio id="bg-music" autoplay loop>
-        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-    </audio>
-
-    <script>
-    const music = document.getElementById("bg-music");
-    music.play();  // attempt to start immediately
-    </script>
-    """, unsafe_allow_html=True)
+    if not st.session_state.music_started:
+        with open("music.mp3", "rb") as f:
+            data = f.read()
+            b64 = base64.b64encode(data).decode()
+        st.markdown(f"""
+        <audio id="bg-music" autoplay loop>
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+        <script>
+        const music = document.getElementById("bg-music");
+        music.play();
+        </script>
+        """, unsafe_allow_html=True)
+        st.session_state.music_started = True
 
 # ---------- GLOBAL CSS + JS ----------
 st.markdown("""
 <style>
 body {
-    background-color: #ffd6e7;
     overflow: hidden;
     margin: 0;
     font-family: sans-serif;
 }
 
-/* Big beating heart */
+/* Landing page baby pink background */
+body[data-page="landing"] {
+    background-color: #ffc0cb;
+}
+
+/* Other pages light peach */
+body[data-page]:not([data-page="landing"]) {
+    background-color: #ffd6e7;
+}
+
+/* Big throbbing heart */
 .big-heart {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 180px;
+    color: red;
     animation: pulse 1.2s infinite;
     opacity: 0.9;
 }
@@ -75,11 +88,34 @@ body {
     100% { top: 5%; left: 5%; }
 }
 
+/* Centered text */
 .center { text-align: center; margin-top: 120px; }
 .big-text { font-size: 42px; font-weight: bold; color: #ff4d88; }
 
-/* No button runner */
-.runaway { position: absolute; }
+/* Moving "No" button */
+.runaway { 
+    position: absolute; 
+    padding:12px 24px; 
+    font-size:18px; 
+    border-radius:8px; 
+    border:none; 
+    background:#ff69b4; 
+    color:white; 
+    cursor:pointer; 
+}
+
+/* Floating hearts animation */
+.heart-float {
+    position: absolute;
+    font-size: 24px;
+    animation-name: floatheart;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+@keyframes floatheart {
+    0% { transform: translateY(100vh) scale(1); opacity: 1; }
+    100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+}
 </style>
 
 <script>
@@ -101,14 +137,24 @@ function moveButton(btn){
 </script>
 """, unsafe_allow_html=True)
 
+# ---------- AUTOPLAY MUSIC ON EVERY PAGE ----------
+autoplay_audio()
+
 # ---------- LANDING PAGE ----------
 if st.session_state.stage == "landing":
-    autoplay_audio()  # Play your music
-
     st.markdown('<div class="big-heart">💖</div>', unsafe_allow_html=True)
-    st.markdown('<div class="envelope">Open me 💌</div>', unsafe_allow_html=True)
 
-    if st.button("💌 Open the envelope"):
+    if not st.session_state.envelope_opened:
+        st.markdown("""
+        <div class="envelope" onclick="document.querySelector('.envelope').style.display='none';">
+            Open me 💌
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("💌 Open the envelope"):
+            st.session_state.envelope_opened = True
+            st.session_state.stage = "question"
+            st.rerun()
+    else:
         st.session_state.stage = "question"
         st.rerun()
 
@@ -117,20 +163,25 @@ elif st.session_state.stage == "question":
     st.markdown('<div class="center big-text">Will you be my Valentine, again? 💗</div>', unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
-
     with col1:
         if st.button("Yes 😍"):
             st.session_state.stage = "yes"
             st.rerun()
-
     with col2:
         st.markdown("""
         <button class="runaway"
-        onmouseover="moveButton(this)"
-        style="padding:12px 24px; font-size:18px; border-radius:8px; border:none; background:#ff69b4; color:white;">
+        onmouseover="moveButton(this)">
         No 😏
         </button>
+        <script>
+        document.querySelector('.runaway').onclick = function(){window.location.href=window.location.href + '#no';};
+        </script>
         """, unsafe_allow_html=True)
+
+    # Detect URL hash for "No" click
+    if st.experimental_get_query_params().get('no'):
+        st.session_state.stage = "no"
+        st.rerun()
 
 # ---------- YES PAGE ----------
 elif st.session_state.stage == "yes":
@@ -145,7 +196,7 @@ elif st.session_state.stage == "yes":
     </div>
     """, unsafe_allow_html=True)
 
-# ---------- NO PAGE (almost unreachable 😏) ----------
+# ---------- NO PAGE ----------
 elif st.session_state.stage == "no":
     st.markdown("""
     <div class="center big-text">
