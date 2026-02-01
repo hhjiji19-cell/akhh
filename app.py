@@ -1,34 +1,19 @@
 import streamlit as st
-import base64
 
 st.set_page_config(page_title="Valentine 💖", layout="wide")
 
 # ---------- SESSION STATE ----------
 if "stage" not in st.session_state:
     st.session_state.stage = "landing"
-if "envelope_opened" not in st.session_state:
-    st.session_state.envelope_opened = False
 if "music_started" not in st.session_state:
     st.session_state.music_started = False
 
-# ---------- AUTOPLAY MUSIC ----------
-def autoplay_audio():
-    if not st.session_state.music_started:
-        with open("music.mp3", "rb") as f:
-            data = f.read()
-            b64 = base64.b64encode(data).decode()
-        st.markdown(f"""
-        <audio id="bg-music" autoplay loop>
-            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-        </audio>
-        <script>
-        const music = document.getElementById("bg-music");
-        music.play();
-        </script>
-        """, unsafe_allow_html=True)
-        st.session_state.music_started = True
+# ---------- PLAY MUSIC ----------
+if not st.session_state.music_started:
+    st.audio("music.mp3", format="audio/mp3", start_time=0)
+    st.session_state.music_started = True
 
-# ---------- GLOBAL CSS + JS ----------
+# ---------- GLOBAL CSS ----------
 st.markdown("""
 <style>
 body {
@@ -87,94 +72,40 @@ body[data-page]:not([data-page="landing"]) {
 .center { text-align: center; margin-top: 120px; }
 .big-text { font-size: 42px; font-weight: bold; color: #ff4d88; }
 
-/* Moving "No" button */
-.runaway { 
-    position: absolute; 
-    padding:12px 24px; 
-    font-size:18px; 
-    border-radius:8px; 
-    border:none; 
-    background:#ff69b4; 
-    color:white; 
-    cursor:pointer; 
-}
-
-/* Floating hearts animation */
-.heart-float {
-    position: absolute;
-    font-size: 24px;
-    animation-name: floatheart;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-}
-@keyframes floatheart {
-    0% { transform: translateY(100vh) scale(1); opacity: 1; }
-    100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+/* Buttons */
+.stButton>button {
+    padding: 12px 24px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    margin: 10px;
 }
 </style>
-
-<script>
-// Floating hearts
-for (let i = 0; i < 25; i++) {
-    let heart = document.createElement("div");
-    heart.className = "heart-float";
-    heart.style.left = Math.random() * 100 + "vw";
-    heart.style.animationDuration = (6 + Math.random() * 6) + "s";
-    heart.innerHTML = "💖";
-    document.body.appendChild(heart);
-}
-
-// Move button away
-function moveButton(btn){
-    btn.style.top = Math.random()*70 + "vh";
-    btn.style.left = Math.random()*70 + "vw";
-}
-</script>
 """, unsafe_allow_html=True)
-
-# ---------- AUTOPLAY MUSIC ON EVERY PAGE ----------
-autoplay_audio()
 
 # ---------- LANDING PAGE ----------
 if st.session_state.stage == "landing":
     st.markdown('<div class="big-heart">💖</div>', unsafe_allow_html=True)
-
-    # Envelope
-    if not st.session_state.envelope_opened:
-        st.markdown("""
-        <div class="envelope" onclick="document.querySelector('.envelope').style.display='none';">
-            💌 Click me
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Envelope clicked (hidden trigger)"):
-            st.session_state.envelope_opened = True
-            st.session_state.stage = "question"
-            st.rerun()
-    else:
+    
+    # Envelope click
+    if st.button("💌 Open Envelope"):
         st.session_state.stage = "question"
         st.rerun()
 
 # ---------- QUESTION PAGE ----------
 elif st.session_state.stage == "question":
     st.markdown('<div class="center big-text">Will you be my Valentine, again? 💗</div>', unsafe_allow_html=True)
-
     col1, col2 = st.columns(2)
+    
     with col1:
         if st.button("Yes 😍"):
             st.session_state.stage = "yes"
             st.rerun()
     with col2:
-        st.markdown("""
-        <button class="runaway"
-        onmouseover="moveButton(this)" onclick="window.location.href=window.location.href + '#no';">
-        No 😏
-        </button>
-        """, unsafe_allow_html=True)
-
-    # Detect URL hash for "No" click
-    if st.experimental_get_query_params().get('no'):
-        st.session_state.stage = "no"
-        st.rerun()
+        if st.button("No 😏"):
+            st.session_state.stage = "no"
+            st.rerun()
 
 # ---------- YES PAGE ----------
 elif st.session_state.stage == "yes":
