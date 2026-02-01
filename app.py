@@ -138,34 +138,10 @@ def local_css():
         position: relative;
     }
     
-    /* Hide audio player and Streamlit default elements */
-    audio {
-        display: none !important;
-    }
-    
+    /* Hide Streamlit default elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    /* Music button */
-    .music-play-button {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #FF4444;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
-        cursor: pointer;
-        z-index: 1000;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
     
     /* GIF styling */
     .gif-container {
@@ -180,84 +156,143 @@ def local_css():
     h1, h2, h3, h4, h5, h6, p, div, span {
         color: #C2185B !important;
     }
+    
+    /* Music control button */
+    .music-control {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #FF4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .music-control:hover {
+        background: #FF2222;
+        transform: scale(1.1);
+    }
     </style>
     """, unsafe_allow_html=True)
 
-def autoplay_audio():
-    """Create audio autoplay"""
+# Initialize session state
+if 'page' not in st.session_state:
+    st.session_state.page = 'landing'
+if 'music_playing' not in st.session_state:
+    st.session_state.music_playing = True
+
+# Apply custom CSS
+local_css()
+
+# ---------- AUTOPLAY MUSIC FUNCTION ----------
+def autoplay_music():
+    """Autoplay music when page loads"""
     try:
-        # Read and encode the audio file
+        # Read the music file
         with open("music.mp3", "rb") as f:
             audio_bytes = f.read()
             b64 = base64.b64encode(audio_bytes).decode()
         
-        # Create audio element
+        # Create audio element that autoplays
         audio_html = f"""
-        <audio id="valentineMusic" loop style="display: none;">
+        <audio id="valentineMusic" autoplay loop style="display: none;">
             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
         
-        <button id="musicButton" class="music-play-button" onclick="toggleMusic()">🎵</button>
+        <button id="musicButton" class="music-control" onclick="toggleMusic()">🔊</button>
         
         <script>
             const audio = document.getElementById('valentineMusic');
             const musicButton = document.getElementById('musicButton');
-            let isPlaying = false;
+            let isPlaying = true;
+            
+            // Set initial volume
+            audio.volume = 0.7;
             
             function toggleMusic() {{
                 if (isPlaying) {{
                     audio.pause();
-                    musicButton.innerHTML = '🎵';
-                    musicButton.style.background = '#FF4444';
+                    musicButton.innerHTML = '🔇';
+                    musicButton.style.background = '#666666';
                 }} else {{
-                    audio.volume = 0.7;
                     audio.play();
                     musicButton.innerHTML = '🔊';
-                    musicButton.style.background = '#4CAF50';
+                    musicButton.style.background = '#FF4444';
                 }}
                 isPlaying = !isPlaying;
             }}
             
-            // Try to play automatically
-            function playMusic() {{
+            // Multiple attempts to autoplay
+            function attemptAutoplay() {{
                 if (audio) {{
-                    audio.volume = 0.7;
                     const playPromise = audio.play();
                     
                     if (playPromise !== undefined) {{
                         playPromise
                             .then(_ => {{
-                                isPlaying = true;
+                                console.log("Music playing automatically");
                                 musicButton.innerHTML = '🔊';
-                                musicButton.style.background = '#4CAF50';
+                                musicButton.style.background = '#FF4444';
                             }})
                             .catch(error => {{
+                                console.log("Autoplay prevented, showing play button");
                                 musicButton.innerHTML = '▶️';
                                 musicButton.style.background = '#FF4444';
                                 musicButton.title = "Click to play music";
+                                
+                                // Enable play on first user interaction
+                                document.body.addEventListener('click', function enableMusic() {{
+                                    audio.play();
+                                    musicButton.innerHTML = '🔊';
+                                    musicButton.style.background = '#FF4444';
+                                    document.body.removeEventListener('click', enableMusic);
+                                }}, {{ once: true }});
                             }});
                     }}
                 }}
             }}
             
-            // Try to play on load
-            window.addEventListener('load', playMusic);
-            setTimeout(playMusic, 1000);
+            // Try autoplay on page load
+            window.addEventListener('DOMContentLoaded', attemptAutoplay);
+            
+            // Also try after a short delay
+            setTimeout(attemptAutoplay, 1000);
+            
+            // Make sure audio plays on any user interaction
+            document.addEventListener('click', function() {{
+                if (audio.paused) {{
+                    audio.play();
+                    musicButton.innerHTML = '🔊';
+                    musicButton.style.background = '#FF4444';
+                    isPlaying = true;
+                }}
+            }}, {{ once: true }});
+            
         </script>
         """
         return audio_html
     except Exception as e:
-        return f"<!-- Audio error: {str(e)} -->"
+        # If music file doesn't exist, create a silent placeholder
+        return """
+        <audio id="valentineMusic" style="display: none;"></audio>
+        <button id="musicButton" class="music-control" onclick="toggleMusic()" style="display: none;"></button>
+        <script>
+            function toggleMusic() {}
+        </script>
+        """
 
-# Initialize session state
-if 'page' not in st.session_state:
-    st.session_state.page = 'landing'
-
-# Apply custom CSS
-local_css()
-
-# Add background music
-st.markdown(autoplay_audio(), unsafe_allow_html=True)
+# Add autoplay music
+st.markdown(autoplay_music(), unsafe_allow_html=True)
 
 # Main app logic
 if st.session_state.page == 'landing':
@@ -325,7 +360,7 @@ elif st.session_state.page == 'yes_response':
         # Show the GIF
         st.markdown('<div class="gif-container">', unsafe_allow_html=True)
         st.image(
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12afltvVzJIesM/giphy.gif",
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdT1n/12afltvVzJIesM/giphy.gif",
             use_column_width=True
         )
         st.markdown('</div>', unsafe_allow_html=True)
