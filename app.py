@@ -8,28 +8,19 @@ if "stage" not in st.session_state:
 if "music_started" not in st.session_state:
     st.session_state.music_started = False
 
-# ---------- PLAY MUSIC ----------
+# ---------- AUTOPLAY MUSIC ----------
 if not st.session_state.music_started:
     st.audio("music.mp3", format="audio/mp3", start_time=0)
     st.session_state.music_started = True
 
-# ---------- GLOBAL CSS ----------
+# ---------- GLOBAL CSS + JS ----------
 st.markdown("""
 <style>
 body {
     overflow: hidden;
     margin: 0;
     font-family: sans-serif;
-}
-
-/* Landing page baby pink background */
-body[data-page="landing"] {
-    background-color: #ffc0cb;
-}
-
-/* Other pages light peach */
-body[data-page]:not([data-page="landing"]) {
-    background-color: #ffd6e7;
+    background-color: #ffc0cb; /* baby pink background for landing page */
 }
 
 /* Big throbbing heart */
@@ -55,9 +46,6 @@ body[data-page]:not([data-page="landing"]) {
     height: 120px;
     background: white;
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     border-radius: 12px;
     text-align: center;
     line-height: 120px;
@@ -66,6 +54,14 @@ body[data-page]:not([data-page="landing"]) {
     cursor: pointer;
     box-shadow: 0 10px 25px rgba(0,0,0,0.25);
     font-size: 18px;
+    animation: float 8s infinite ease-in-out;
+}
+@keyframes float {
+    0% { top: 5%; left: 5%; }
+    25% { top: 20%; left: 80%; }
+    50% { top: 70%; left: 40%; }
+    75% { top: 40%; left: 70%; }
+    100% { top: 5%; left: 5%; }
 }
 
 /* Centered text */
@@ -82,16 +78,28 @@ body[data-page]:not([data-page="landing"]) {
     margin: 10px;
 }
 </style>
+
+<script>
+// Detect envelope click and send message to Streamlit
+function envelopeClicked() {
+    const streamlitMessage = new CustomEvent("streamlit:envelope-clicked");
+    window.dispatchEvent(streamlitMessage);
+}
+</script>
 """, unsafe_allow_html=True)
 
 # ---------- LANDING PAGE ----------
 if st.session_state.stage == "landing":
-    st.markdown('<div class="big-heart">💖</div>', unsafe_allow_html=True)
-    
-    # Envelope click
-    if st.button("💌 Open Envelope"):
+    st.markdown('<div class="big-heart">❤️</div>', unsafe_allow_html=True)
+
+    # Envelope moving around the screen
+    if st.button("💌 Open me (hidden trigger)", key="hidden_envelope"):
         st.session_state.stage = "question"
         st.rerun()
+
+    st.markdown("""
+    <div class="envelope" onclick="document.querySelector('button[key=\\'hidden_envelope\\']').click()">Open me 💌</div>
+    """, unsafe_allow_html=True)
 
 # ---------- QUESTION PAGE ----------
 elif st.session_state.stage == "question":
