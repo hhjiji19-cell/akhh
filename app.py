@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ---------- CUSTOM CSS ----------
+# Custom CSS with all fixes
 def local_css():
     st.markdown("""
     <style>
@@ -24,57 +24,46 @@ def local_css():
         background-size: 20px 20px;
         background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
     }
-
-    /* Big red throbbing heart */
+    
+    /* Big red throbbing heart animation */
     @keyframes throb {
         0% { transform: scale(1); }
         50% { transform: scale(1.2); }
         100% { transform: scale(1); }
     }
+    
     .throbbing-heart {
         animation: throb 1.5s infinite;
         color: #FF0000;
-        font-size: 10rem;
         text-align: center;
+        font-size: 10rem;
         margin: 20px 0;
         filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3));
     }
-
-    /* Envelope bouncing animation */
-    @keyframes bounce {
-        0%, 100% { transform: translate(0,0) scale(1); }
-        25% { transform: translate(30px,-20px) scale(1.1); }
-        50% { transform: translate(-25px,30px) scale(1); }
-        75% { transform: translate(20px,-15px) scale(1.1); }
+    
+    /* Envelope styling */
+    .envelope-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin-top: 50px;
     }
+    
     .envelope {
         font-size: 8rem;
         cursor: pointer;
-        animation: bounce 3s infinite ease-in-out;
         margin-bottom: 20px;
+        transition: transform 0.3s ease;
         filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
     }
-
-    /* Envelope open button */
-    .open-btn {
-        background: linear-gradient(45deg, #ff69b4, #ff1493);
-        color: white;
-        border: none;
-        padding: 15px 40px;
-        font-size: 20px;
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: bold;
-        box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
-        transition: all 0.3s ease;
-        margin-top: 20px;
+    
+    .envelope:hover {
+        transform: scale(1.1);
     }
-    .open-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 20px rgba(255, 105, 180, 0.5);
-    }
-
-    /* Question text */
+    
+    /* Question text styling - DARK PINK */
     .question-text {
         color: #C2185B !important;
         font-size: 3.5rem;
@@ -84,8 +73,8 @@ def local_css():
         text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
         line-height: 1.4;
     }
-
-    /* Response text */
+    
+    /* Response text styling */
     .response-text {
         color: #C2185B !important;
         font-size: 2.5rem;
@@ -95,8 +84,30 @@ def local_css():
         text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
         line-height: 1.4;
     }
-
-    /* Centered layout */
+    
+    /* Buttons styling */
+    .stButton > button {
+        background-color: #FF4444;
+        color: white;
+        border: none;
+        padding: 20px 40px;
+        text-align: center;
+        font-size: 22px;
+        margin: 10px;
+        border-radius: 30px;
+        transition: all 0.3s;
+        font-weight: bold;
+        font-family: 'Arial Rounded MT Bold', sans-serif;
+        box-shadow: 0 6px 12px rgba(255, 68, 68, 0.3);
+    }
+    
+    .stButton > button:hover {
+        background-color: #FF2222;
+        transform: scale(1.08);
+        box-shadow: 0 8px 20px rgba(255, 68, 68, 0.5);
+    }
+    
+    /* Center content */
     .centered {
         display: flex;
         flex-direction: column;
@@ -104,14 +115,15 @@ def local_css():
         justify-content: center;
         text-align: center;
         min-height: 80vh;
+        position: relative;
     }
-
-    /* Hide Streamlit menu and footer */
+    
+    /* Hide Streamlit default elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-
-    /* GIF container */
+    
+    /* GIF styling */
     .gif-container {
         margin: 30px 0;
         border-radius: 20px;
@@ -119,114 +131,186 @@ def local_css():
         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         max-width: 400px;
     }
+    
+    /* Make sure all text is dark pink */
+    h1, h2, h3, h4, h5, h6, p, div, span {
+        color: #C2185B !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# ---------- AUTOPLAY MUSIC ----------
-def autoplay_music():
-    """Autoplay music when page loads"""
+# Initialize session state
+if 'page' not in st.session_state:
+    st.session_state.page = 'landing'
+
+# Apply custom CSS
+local_css()
+
+# ---------- SIMPLE AUTOPLAY MUSIC ----------
+def autoplay_music_simple():
+    """Simple autoplay music that should work reliably"""
     try:
+        # Read the music file
         with open("music.mp3", "rb") as f:
             audio_bytes = f.read()
             b64 = base64.b64encode(audio_bytes).decode()
         
-        html = f"""
-        <audio id="valentineMusic" autoplay loop style="display:none;">
+        # Create HTML audio element with autoplay
+        audio_html = f"""
+        <audio id="bgMusic" autoplay loop style="display: none;">
             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
+        
         <script>
-            const audio = document.getElementById('valentineMusic');
-            audio.volume = 0.6;
-
-            function playAudio() {{
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {{
-                    playPromise
-                        .then(_ => console.log("Music playing"))
-                        .catch(err => {{
-                            document.body.addEventListener('click', function clickPlay() {{
-                                audio.play();
-                                document.body.removeEventListener('click', clickPlay);
-                            }}, {{ once: true }});
-                        }});
-                }}
-            }}
-
-            window.addEventListener('load', playAudio);
-            setTimeout(playAudio, 500);
+        // Get audio element
+        var audio = document.getElementById('bgMusic');
+        
+        // Set volume to 70%
+        audio.volume = 0.7;
+        
+        // Try to play immediately
+        audio.play().catch(function(error) {{
+            console.log("Autoplay prevented:", error);
+            // If autoplay fails, play on first user interaction
+            document.addEventListener('click', function playOnClick() {{
+                audio.play();
+                document.removeEventListener('click', playOnClick);
+            }}, {{once: true}});
+        }});
         </script>
         """
-        return html
+        return audio_html
     except:
-        return ""
+        return "<!-- Could not load music -->"
 
-# ---------- SESSION STATE ----------
-if 'page' not in st.session_state:
-    st.session_state.page = 'landing'
+# Add the music player
+st.markdown(autoplay_music_simple(), unsafe_allow_html=True)
 
-# ---------- APPLY CSS AND MUSIC ----------
-local_css()
-st.markdown(autoplay_music(), unsafe_allow_html=True)
-
-# ---------- APP LOGIC ----------
+# Main app logic
 if st.session_state.page == 'landing':
-    # Landing page with heart + envelope
-    col1, col2, col3 = st.columns([1,2,1])
+    # Landing page
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
     with col2:
         st.markdown('<div class="centered">', unsafe_allow_html=True)
+        
+        # Big red throbbing heart
         st.markdown('<div class="throbbing-heart">❤️</div>', unsafe_allow_html=True)
-        st.markdown('<div class="envelope">✉️</div>', unsafe_allow_html=True)
+        
+        # Envelope and button
+        st.markdown("""
+        <div class="envelope-container">
+            <div class="envelope">✉️</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Button to open envelope
         if st.button("Click me to open the envelope", key="open_envelope"):
             st.session_state.page = 'question'
             st.rerun()
+        
         st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.page == 'question':
     # Question page
-    col1, col2, col3 = st.columns([1,2,1])
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
     with col2:
         st.markdown('<div class="centered">', unsafe_allow_html=True)
+        
+        # Question text
         st.markdown('<div class="question-text">Will you be my valentine, again?</div>', unsafe_allow_html=True)
-
+        
+        # Create two columns for buttons
         col_yes, col_no = st.columns(2)
+        
         with col_yes:
             if st.button("YES ❤️", key="yes_button", use_container_width=True):
                 st.session_state.page = 'yes_response'
                 st.rerun()
+        
         with col_no:
             if st.button("NO 💔", key="no_button", use_container_width=True):
                 st.session_state.page = 'no_response'
                 st.rerun()
         
+        # Back button
+        st.markdown("<br>", unsafe_allow_html=True)
         if st.button("← Back", key="back_to_landing"):
             st.session_state.page = 'landing'
             st.rerun()
+        
         st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.page == 'yes_response':
-    col1, col2, col3 = st.columns([1,2,1])
+    # YES response page
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
     with col2:
         st.markdown('<div class="centered">', unsafe_allow_html=True)
+        
+        # Show the GIF
         st.markdown('<div class="gif-container">', unsafe_allow_html=True)
         st.image(
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdT1n/12afltvVzJIesM/giphy.gif",
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12afltvVzJIesM/giphy.gif",
             use_column_width=True
         )
         st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('<div class="response-text">Another year of you tolerating me,<br><br>I love you so much gullu pullu ❤️</div>', unsafe_allow_html=True)
+        
+        # Text under GIF
+        st.markdown('<div class="response-text">Another year of you tolerating me,<br><br>I love you so much gullu pullu ❤️</div>', 
+                   unsafe_allow_html=True)
+        
+        # Celebration effects
         st.balloons()
+        
+        # Button to go back
+        st.markdown("<br><br>", unsafe_allow_html=True)
         if st.button("✨ Start Over ✨", key="start_over_from_yes", use_container_width=True):
             st.session_state.page = 'landing'
             st.rerun()
+        
         st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.page == 'no_response':
-    col1, col2, col3 = st.columns([1,2,1])
+    # NO response page
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
     with col2:
         st.markdown('<div class="centered">', unsafe_allow_html=True)
-        st.markdown('<div class="throbbing-heart" style="color:#666; animation:throb 2s infinite;">💔</div>', unsafe_allow_html=True)
-        st.markdown('<div class="response-text">Oh,<br>You missed your chance 😌<br>Better luck next time!</div>', unsafe_allow_html=True)
+        
+        # Broken heart
+        st.markdown('<div class="throbbing-heart" style="color: #666; animation: throb 2s infinite;">💔</div>', 
+                   unsafe_allow_html=True)
+        
+        # Text
+        st.markdown('<div class="response-text">Oh,<br>You missed your chance 😌<br>Better luck next time!</div>', 
+                   unsafe_allow_html=True)
+        
+        # Button to go back
+        st.markdown("<br><br>", unsafe_allow_html=True)
         if st.button("✨ Start Over ✨", key="start_over_from_no", use_container_width=True):
             st.session_state.page = 'landing'
             st.rerun()
+        
         st.markdown('</div>', unsafe_allow_html=True)
+
+# Add a hidden button that forces music to play on click
+st.markdown("""
+<script>
+// Add a click listener to play music if it's not playing
+document.addEventListener('DOMContentLoaded', function() {
+    var audio = document.getElementById('bgMusic');
+    if (audio) {
+        // Try to play on any user click
+        document.body.addEventListener('click', function() {
+            if (audio.paused) {
+                audio.play().catch(function(e) {
+                    console.log("Playback failed:", e);
+                });
+            }
+        });
+    }
+});
+</script>
+""", unsafe_allow_html=True)
