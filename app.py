@@ -1,339 +1,369 @@
 import streamlit as st
 import base64
-import time
 
-st.set_page_config(page_title="Valentine 💖", layout="wide")
+# Page configuration
+st.set_page_config(
+    page_title="My Valentine ❤️",
+    page_icon="❤️",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-# ---------- SESSION STATE ----------
-if "stage" not in st.session_state:
-    st.session_state.stage = "landing"
-if "music_started" not in st.session_state:
-    st.session_state.music_started = False
-if "envelope_opened" not in st.session_state:
-    st.session_state.envelope_opened = False
+# Custom CSS with all fixes
+def local_css():
+    st.markdown("""
+    <style>
+    /* Baby pink checkered background */
+    .stApp {
+        background-color: #FFE6E6 !important;
+        background-image: 
+            linear-gradient(45deg, #ffb6c1 25%, transparent 25%),
+            linear-gradient(-45deg, #ffb6c1 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #ffb6c1 75%),
+            linear-gradient(-45deg, transparent 75%, #ffb6c1 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+    
+    /* Big red throbbing heart animation */
+    @keyframes throb {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    .throbbing-heart {
+        animation: throb 1.5s infinite;
+        color: #FF0000;
+        text-align: center;
+        font-size: 10rem;
+        margin: 20px 0;
+        filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3));
+    }
+    
+    /* Envelope styling */
+    .envelope-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin-top: 50px;
+    }
+    
+    .envelope {
+        font-size: 8rem;
+        cursor: pointer;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+        filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+    }
+    
+    .envelope:hover {
+        transform: scale(1.1);
+    }
+    
+    /* Envelope open button */
+    .open-btn {
+        background: linear-gradient(45deg, #ff69b4, #ff1493);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+    
+    .open-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(255, 105, 180, 0.5);
+    }
+    
+    /* Question text styling - DARK PINK */
+    .question-text {
+        color: #C2185B !important;
+        font-size: 3.5rem;
+        text-align: center;
+        margin: 40px 0;
+        font-family: 'Brush Script MT', cursive;
+        text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
+        line-height: 1.4;
+    }
+    
+    /* Response text styling */
+    .response-text {
+        color: #C2185B !important;
+        font-size: 2.5rem;
+        text-align: center;
+        margin: 30px 0;
+        font-family: 'Brush Script MT', cursive;
+        text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
+        line-height: 1.4;
+    }
+    
+    /* Buttons styling */
+    .stButton > button {
+        background-color: #FF4444;
+        color: white;
+        border: none;
+        padding: 20px 40px;
+        text-align: center;
+        font-size: 22px;
+        margin: 10px;
+        border-radius: 30px;
+        transition: all 0.3s;
+        font-weight: bold;
+        font-family: 'Arial Rounded MT Bold', sans-serif;
+        box-shadow: 0 6px 12px rgba(255, 68, 68, 0.3);
+    }
+    
+    .stButton > button:hover {
+        background-color: #FF2222;
+        transform: scale(1.08);
+        box-shadow: 0 8px 20px rgba(255, 68, 68, 0.5);
+    }
+    
+    /* Center content */
+    .centered {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 80vh;
+        position: relative;
+    }
+    
+    /* Hide audio player and Streamlit default elements */
+    audio {
+        display: none !important;
+    }
+    
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Music button */
+    .music-play-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #FF4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* GIF styling */
+    .gif-container {
+        margin: 30px 0;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        max-width: 400px;
+    }
+    
+    /* Make sure all text is dark pink */
+    h1, h2, h3, h4, h5, h6, p, div, span {
+        color: #C2185B !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-# ---------- AUTOPLAY MUSIC ----------
 def autoplay_audio():
-    if not st.session_state.music_started:
-        try:
-            with open("music.mp3", "rb") as f:
-                data = f.read()
-                b64 = base64.b64encode(data).decode()
-            st.markdown(f"""
-            <audio id="bg-music" autoplay loop>
-                <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-            </audio>
-            <script>
-            const music = document.getElementById("bg-music");
-            music.play();
-            </script>
-            """, unsafe_allow_html=True)
-            st.session_state.music_started = True
-        except:
-            # If music file doesn't exist, just continue without it
-            st.session_state.music_started = True
+    """Create audio autoplay"""
+    try:
+        # Read and encode the audio file
+        with open("music.mp3", "rb") as f:
+            audio_bytes = f.read()
+            b64 = base64.b64encode(audio_bytes).decode()
+        
+        # Create audio element
+        audio_html = f"""
+        <audio id="valentineMusic" loop style="display: none;">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+        
+        <button id="musicButton" class="music-play-button" onclick="toggleMusic()">🎵</button>
+        
+        <script>
+            const audio = document.getElementById('valentineMusic');
+            const musicButton = document.getElementById('musicButton');
+            let isPlaying = false;
+            
+            function toggleMusic() {{
+                if (isPlaying) {{
+                    audio.pause();
+                    musicButton.innerHTML = '🎵';
+                    musicButton.style.background = '#FF4444';
+                }} else {{
+                    audio.volume = 0.7;
+                    audio.play();
+                    musicButton.innerHTML = '🔊';
+                    musicButton.style.background = '#4CAF50';
+                }}
+                isPlaying = !isPlaying;
+            }}
+            
+            // Try to play automatically
+            function playMusic() {{
+                if (audio) {{
+                    audio.volume = 0.7;
+                    const playPromise = audio.play();
+                    
+                    if (playPromise !== undefined) {{
+                        playPromise
+                            .then(_ => {{
+                                isPlaying = true;
+                                musicButton.innerHTML = '🔊';
+                                musicButton.style.background = '#4CAF50';
+                            }})
+                            .catch(error => {{
+                                musicButton.innerHTML = '▶️';
+                                musicButton.style.background = '#FF4444';
+                                musicButton.title = "Click to play music";
+                            }});
+                    }}
+                }}
+            }}
+            
+            // Try to play on load
+            window.addEventListener('load', playMusic);
+            setTimeout(playMusic, 1000);
+        </script>
+        """
+        return audio_html
+    except Exception as e:
+        return f"<!-- Audio error: {str(e)} -->"
 
-# ---------- GLOBAL CSS ----------
-st.markdown("""
-<style>
-/* Main container styling */
-.main {
-    background-color: #ffc0cb !important;
-    background-image: 
-        linear-gradient(rgba(255, 192, 203, 0.8) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 192, 203, 0.8) 1px, transparent 1px);
-    background-size: 50px 50px;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-}
+# Initialize session state
+if 'page' not in st.session_state:
+    st.session_state.page = 'landing'
 
-/* For other pages */
-.other-page {
-    background-color: #ffd6e7 !important;
-    background-image: 
-        linear-gradient(rgba(255, 214, 231, 0.8) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 214, 231, 0.8) 1px, transparent 1px);
-    background-size: 50px 50px;
-    min-height: 100vh;
-}
+# Apply custom CSS
+local_css()
 
-/* Hide Streamlit elements */
-#MainMenu {visibility: hidden;}
-header {visibility: hidden;}
-footer {visibility: hidden;}
+# Add background music
+st.markdown(autoplay_audio(), unsafe_allow_html=True)
 
-/* Big throbbing heart */
-.big-heart {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 180px;
-    color: red;
-    animation: pulse 1.2s infinite;
-    opacity: 0.9;
-    z-index: 1;
-}
-@keyframes pulse {
-    0% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.2); }
-    100% { transform: translate(-50%, -50%) scale(1); }
-}
-
-/* Floating envelope */
-.envelope-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    text-align: center;
-}
-
-.envelope {
-    width: 200px;
-    height: 140px;
-    background: white;
-    border-radius: 12px;
-    font-weight: bold;
-    color: #ff69b4;
-    cursor: pointer;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-    animation: float 8s infinite ease-in-out;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    border: 2px dashed #ff69b4;
-}
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-    100% { transform: translateY(0px); }
-}
-
-/* Open button */
-.open-btn {
-    background: linear-gradient(45deg, #ff69b4, #ff1493);
-    color: white;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 30px;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
-    transition: all 0.3s ease;
-}
-
-.open-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.6);
-}
-
-/* Centered content */
-.center-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    width: 100%;
-    max-width: 800px;
-    z-index: 2;
-}
-
-.big-text {
-    font-size: 48px;
-    font-weight: bold;
-    color: #ff4d88;
-    margin-bottom: 40px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Yes/No buttons */
-.yes-no-container {
-    display: flex;
-    justify-content: center;
-    gap: 50px;
-    margin-top: 40px;
-}
-
-.yes-btn, .no-btn {
-    padding: 15px 40px;
-    font-size: 24px;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: bold;
-}
-
-.yes-btn {
-    background: linear-gradient(45deg, #ff69b4, #ff1493);
-    color: white;
-    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
-}
-
-.yes-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 25px rgba(255, 105, 180, 0.6);
-}
-
-.no-btn {
-    background: linear-gradient(45deg, #87CEFA, #1E90FF);
-    color: white;
-    box-shadow: 0 5px 15px rgba(135, 206, 250, 0.4);
-    position: relative;
-}
-
-.no-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 25px rgba(135, 206, 250, 0.6);
-}
-
-/* Floating hearts */
-.heart {
-    position: absolute;
-    font-size: 24px;
-    animation: floatUp 6s linear infinite;
-    opacity: 0;
-}
-
-@keyframes floatUp {
-    0% {
-        transform: translateY(100vh) scale(0.5);
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-100px) scale(1.5);
-        opacity: 0;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ---------- FLOATING HEARTS JAVASCRIPT ----------
-st.markdown("""
-<script>
-// Create floating hearts
-function createHearts() {
-    const container = document.body;
-    for (let i = 0; i < 30; i++) {
-        const heart = document.createElement('div');
-        heart.className = 'heart';
-        heart.innerHTML = '💖';
-        heart.style.left = Math.random() * 100 + 'vw';
-        heart.style.animationDelay = Math.random() * 5 + 's';
-        heart.style.animationDuration = (3 + Math.random() * 7) + 's';
-        heart.style.fontSize = (20 + Math.random() * 30) + 'px';
-        container.appendChild(heart);
-    }
-}
-
-// Run when page loads
-window.addEventListener('load', createHearts);
-</script>
-""", unsafe_allow_html=True)
-
-# ---------- AUTOPLAY MUSIC ----------
-autoplay_audio()
-
-# ---------- LANDING PAGE ----------
-if st.session_state.stage == "landing":
-    # Apply baby pink checkered background
-    st.markdown('<div class="main"></div>', unsafe_allow_html=True)
+# Main app logic
+if st.session_state.page == 'landing':
+    # Landing page
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    # Big throbbing heart
-    st.markdown('<div class="big-heart">💖</div>', unsafe_allow_html=True)
-    
-    # Envelope and button container
-    st.markdown("""
-    <div class="envelope-container">
-        <div class="envelope">
-            💌 Valentine's Letter 💌
+    with col2:
+        st.markdown('<div class="centered">', unsafe_allow_html=True)
+        
+        # Big red throbbing heart
+        st.markdown('<div class="throbbing-heart">❤️</div>', unsafe_allow_html=True)
+        
+        # Envelope and button
+        st.markdown("""
+        <div class="envelope-container">
+            <div class="envelope">✉️</div>
         </div>
-        <button class="open-btn" onclick="window.location.href=window.location.href.split('?')[0] + '?open=envelope'">
-            Click me to open the envelope
-        </button>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Check if envelope should be opened
-    query_params = st.experimental_get_query_params()
-    if query_params.get("open") == ["envelope"]:
-        st.session_state.stage = "question"
-        st.rerun()
+        """, unsafe_allow_html=True)
+        
+        # Button to open envelope
+        if st.button("Click me to open the envelope", key="open_envelope"):
+            st.session_state.page = 'question'
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- QUESTION PAGE ----------
-elif st.session_state.stage == "question":
-    # Apply different background for question page
-    st.markdown('<div class="other-page"></div>', unsafe_allow_html=True)
+elif st.session_state.page == 'question':
+    # Question page
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    st.markdown("""
-    <div class="center-container">
-        <div class="big-text">Will you be my Valentine, again? 💗</div>
-        <div class="yes-no-container">
-            <button class="yes-btn" onclick="window.location.href=window.location.href.split('?')[0] + '?answer=yes'">
-                Yes 😍
-            </button>
-            <button class="no-btn" 
-                    onmouseover="this.style.top=Math.random()*70+'vh'; this.style.left=Math.random()*70+'vw';"
-                    onclick="window.location.href=window.location.href.split('?')[0] + '?answer=no'">
-                No 😏
-            </button>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Check for answer
-    query_params = st.experimental_get_query_params()
-    if query_params.get("answer") == ["yes"]:
-        st.session_state.stage = "yes"
-        st.rerun()
-    elif query_params.get("answer") == ["no"]:
-        st.session_state.stage = "no"
-        st.rerun()
+    with col2:
+        st.markdown('<div class="centered">', unsafe_allow_html=True)
+        
+        # Question text
+        st.markdown('<div class="question-text">Will you be my valentine, again?</div>', unsafe_allow_html=True)
+        
+        # Create two columns for buttons
+        col_yes, col_no = st.columns(2)
+        
+        with col_yes:
+            if st.button("YES ❤️", key="yes_button", use_container_width=True):
+                st.session_state.page = 'yes_response'
+                st.rerun()
+        
+        with col_no:
+            if st.button("NO 💔", key="no_button", use_container_width=True):
+                st.session_state.page = 'no_response'
+                st.rerun()
+        
+        # Back button
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("← Back", key="back_to_landing"):
+            st.session_state.page = 'landing'
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- YES PAGE ----------
-elif st.session_state.stage == "yes":
-    # Apply different background for yes page
-    st.markdown('<div class="other-page"></div>', unsafe_allow_html=True)
+elif st.session_state.page == 'yes_response':
+    # YES response page
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    st.balloons()
-    
-    st.markdown("""
-    <div class="center-container">
-        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12afltvVzJIesM/giphy.gif" 
-             width="350" style="border-radius: 20px; margin-bottom: 30px;">
-        <div class="big-text">
-            Another year of you tolerating me,<br><br>
-            I love you so much gullu pullu ❤️
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="centered">', unsafe_allow_html=True)
+        
+        # Show the GIF
+        st.markdown('<div class="gif-container">', unsafe_allow_html=True)
+        st.image(
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12afltvVzJIesM/giphy.gif",
+            use_column_width=True
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Text under GIF
+        st.markdown('<div class="response-text">Another year of you tolerating me,<br><br>I love you so much gullu pullu ❤️</div>', 
+                   unsafe_allow_html=True)
+        
+        # Celebration effects
+        st.balloons()
+        
+        # Button to go back
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        if st.button("✨ Start Over ✨", key="start_over_from_yes", use_container_width=True):
+            st.session_state.page = 'landing'
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- NO PAGE ----------
-elif st.session_state.stage == "no":
-    # Apply different background for no page
-    st.markdown('<div class="other-page"></div>', unsafe_allow_html=True)
+elif st.session_state.page == 'no_response':
+    # NO response page
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    st.markdown("""
-    <div class="center-container">
-        <div class="big-text">
-            Oh<br><br>
-            You missed your chance!<br>
-            Better luck next time! 😌
-        </div>
-        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYm84emN4MHRlMG5zZndqOWZtaWNoNmM0MjJ5Y3ppNnE1aDl5cm9vcyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l2JhL1YfZP4P8z1EI/giphy.gif" 
-             width="300" style="border-radius: 20px; margin-top: 30px;">
-    </div>
-    """, unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="centered">', unsafe_allow_html=True)
+        
+        # Broken heart
+        st.markdown('<div class="throbbing-heart" style="color: #666; animation: throb 2s infinite;">💔</div>', 
+                   unsafe_allow_html=True)
+        
+        # Text
+        st.markdown('<div class="response-text">Oh,<br>You missed your chance 😌<br>Better luck next time!</div>', 
+                   unsafe_allow_html=True)
+        
+        # Button to go back
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        if st.button("✨ Start Over ✨", key="start_over_from_no", use_container_width=True):
+            st.session_state.page = 'landing'
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
