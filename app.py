@@ -9,158 +9,196 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Creative CSS with better background and alignments
+# CSS with checkered background and perfect alignments
 def local_css():
     st.markdown("""
     <style>
-    /* Creative baby pink background with soft hearts */
+    /* Checkered baby pink background */
     .stApp {
         background-color: #FFE6E6 !important;
         background-image: 
-            radial-gradient(circle at 10% 20%, rgba(255, 200, 200, 0.3) 0%, transparent 20%),
-            radial-gradient(circle at 90% 80%, rgba(255, 200, 200, 0.3) 0%, transparent 20%),
-            radial-gradient(circle at 50% 50%, rgba(255, 220, 220, 0.2) 0%, transparent 30%),
-            radial-gradient(circle at 20% 70%, rgba(255, 180, 180, 0.2) 0%, transparent 25%),
-            radial-gradient(circle at 80% 30%, rgba(255, 180, 180, 0.2) 0%, transparent 25%);
+            linear-gradient(45deg, #ffb6c1 25%, transparent 25%),
+            linear-gradient(-45deg, #ffb6c1 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #ffb6c1 75%),
+            linear-gradient(-45deg, transparent 75%, #ffb6c1 75%);
+        background-size: 30px 30px;
+        background-position: 0 0, 0 15px, 15px -15px, -15px 0px;
         background-attachment: fixed;
     }
     
-    /* Glowing heart animation */
-    @keyframes glowThrob {
-        0% { 
-            transform: scale(1); 
-            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
-        }
-        50% { 
-            transform: scale(1.2); 
-            filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.6));
-        }
-        100% { 
-            transform: scale(1); 
-            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
-        }
+    /* Heart animation */
+    @keyframes heartbeat {
+        0% { transform: scale(1); }
+        25% { transform: scale(1.1); }
+        50% { transform: scale(1); }
+        75% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
     
-    .glowing-heart {
-        animation: glowThrob 2s infinite;
+    .heartbeat {
+        animation: heartbeat 1.2s infinite;
         color: #FF0000;
         text-align: center;
-        font-size: 9rem;
-        margin: 10px 0 30px 0;
+        font-size: 8rem;
+        margin: 10px 0 20px 0;
+        filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3));
     }
     
-    /* Elegant floating envelope */
-    @keyframes gentleFloat {
-        0%, 100% { 
-            transform: translateY(0) rotate(0deg);
-            filter: drop-shadow(0 5px 15px rgba(210, 43, 105, 0.3));
+    /* Floating envelope with checkered pattern */
+    @keyframes floatCheckered {
+        0% { 
+            transform: translate(0px, 0px) rotate(0deg);
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
         33% { 
-            transform: translateY(-15px) rotate(2deg);
-            filter: drop-shadow(0 8px 20px rgba(210, 43, 105, 0.4));
+            transform: translate(80px, -40px) rotate(5deg);
+            background-position: 5px 5px, 5px 15px, 15px -5px, -5px 5px;
         }
         66% { 
-            transform: translateY(-8px) rotate(-1deg);
-            filter: drop-shadow(0 6px 18px rgba(210, 43, 105, 0.35));
+            transform: translate(-60px, 30px) rotate(-3deg);
+            background-position: -5px -5px, -5px 5px, 5px -15px, -15px -5px;
+        }
+        100% { 
+            transform: translate(0px, 0px) rotate(0deg);
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
     }
     
-    .elegant-envelope {
-        animation: gentleFloat 4s ease-in-out infinite;
+    .checkered-envelope {
+        animation: floatCheckered 15s ease-in-out infinite;
         cursor: pointer;
         text-align: center;
         font-size: 7rem;
-        margin: 30px 0 10px 0;
+        margin: 30px 0 5px 0;
         position: relative;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
         color: #D22B69;
+        background-image: 
+            linear-gradient(45deg, rgba(255, 182, 193, 0.3) 25%, transparent 25%),
+            linear-gradient(-45deg, rgba(255, 182, 193, 0.3) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, rgba(255, 182, 193, 0.3) 75%),
+            linear-gradient(-45deg, transparent 75%, rgba(255, 182, 193, 0.3) 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        width: 120px;
+        height: 120px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+        margin-right: auto;
     }
     
-    .elegant-envelope:hover {
-        transform: scale(1.25) rotate(5deg);
+    .checkered-envelope:hover {
+        transform: scale(1.2);
         animation-play-state: paused;
-        filter: drop-shadow(0 12px 25px rgba(210, 43, 105, 0.5)) brightness(1.1);
+        box-shadow: 0 10px 25px rgba(210, 43, 105, 0.4);
     }
     
-    /* Elegant envelope text with ribbon effect */
-    .envelope-ribbon {
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #FF8BA0, #D22B69);
-        color: white;
-        font-weight: bold;
-        font-size: 1.6rem;
-        padding: 8px 25px;
-        border-radius: 25px;
-        white-space: nowrap;
-        font-family: 'Georgia', serif;
-        box-shadow: 0 4px 12px rgba(210, 43, 105, 0.25);
-        margin-top: 15px;
-        letter-spacing: 1px;
+    /* Envelope icon */
+    .envelope-icon {
+        font-size: 5rem;
+        z-index: 2;
     }
     
-    /* Valentine question - Elegant styling */
-    .elegant-question {
+    /* Main title */
+    .main-title {
         color: #8B0A50 !important;
-        font-size: 3.8rem !important;
+        font-size: 3.2rem;
+        margin: 10px 0 5px 0;
+        font-family: 'Brush Script MT', cursive;
+        font-weight: bold;
         text-align: center;
-        margin: 50px 0 60px 0;
-        font-family: 'Dancing Script', cursive;
-        font-weight: 700;
-        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Subtitle */
+    .subtitle {
+        color: #D22B69 !important;
+        font-size: 1.3rem;
+        margin-bottom: 30px;
+        font-family: 'Georgia', serif;
+        text-align: center;
+        font-style: italic;
+    }
+    
+    /* Valentine question - Perfectly centered */
+    .valentine-question {
+        color: #8B0A50 !important;
+        font-size: 3.5rem !important;
+        text-align: center;
+        margin: 60px 0 70px 0;
+        font-family: 'Brush Script MT', cursive;
+        font-weight: bold;
         line-height: 1.2;
         padding: 0 20px;
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
     }
     
-    /* Creative response text */
-    .creative-response {
+    /* Response text */
+    .response-text {
         color: #8B0A50 !important;
-        font-size: 2.8rem;
+        font-size: 2.5rem;
         text-align: center;
-        margin: 25px 0;
-        font-family: 'Dancing Script', cursive;
-        font-weight: 600;
-        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+        margin: 20px 0;
+        font-family: 'Brush Script MT', cursive;
+        font-weight: bold;
+        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
     }
     
-    /* Elegant buttons */
-    .elegant-button {
-        background: linear-gradient(135deg, #FF6B9D, #FF3366) !important;
+    /* Perfectly aligned button container */
+    .aligned-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        margin: 40px 0;
+        width: 100%;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Button styling - SAME SIZE for perfect alignment */
+    .valentine-button {
+        background: linear-gradient(135deg, #FF3366, #FF0066) !important;
         color: white !important;
         border: none !important;
-        padding: 18px 45px !important;
+        padding: 18px 40px !important;
         text-align: center !important;
         font-size: 1.8rem !important;
-        margin: 15px !important;
-        border-radius: 35px !important;
-        font-weight: 600 !important;
-        font-family: 'Segoe UI', sans-serif !important;
-        box-shadow: 0 6px 15px rgba(255, 107, 157, 0.3) !important;
+        border-radius: 30px !important;
+        font-weight: bold !important;
+        font-family: 'Arial', sans-serif !important;
+        box-shadow: 0 6px 15px rgba(255, 51, 102, 0.3) !important;
         transition: all 0.3s ease !important;
-        min-width: 180px !important;
-        letter-spacing: 0.5px !important;
+        min-width: 160px !important;
+        height: 70px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
     }
     
-    .elegant-button:hover {
-        transform: translateY(-3px) scale(1.05) !important;
-        box-shadow: 0 10px 25px rgba(255, 107, 157, 0.5) !important;
-        background: linear-gradient(135deg, #FF3366, #FF0066) !important;
+    .valentine-button:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 10px 25px rgba(255, 51, 102, 0.5) !important;
+        background: linear-gradient(135deg, #FF0066, #CC0052) !important;
     }
     
-    /* No button styling */
-    .no-button-style > button {
-        background: linear-gradient(135deg, #888888, #666666) !important;
+    /* No button - SAME SIZE as YES */
+    .no-button {
+        background: linear-gradient(135deg, #666666, #444444) !important;
         box-shadow: 0 6px 15px rgba(102, 102, 102, 0.3) !important;
     }
     
-    .no-button-style > button:hover {
-        background: linear-gradient(135deg, #666666, #444444) !important;
+    .no-button:hover {
+        background: linear-gradient(135deg, #555555, #333333) !important;
         box-shadow: 0 10px 25px rgba(68, 68, 68, 0.5) !important;
     }
     
-    /* Perfect center alignment */
+    /* Center everything perfectly */
     .perfect-center {
         display: flex;
         flex-direction: column;
@@ -177,62 +215,40 @@ def local_css():
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Main title */
-    .main-title {
-        color: #8B0A50 !important;
-        font-size: 3.5rem;
-        margin-bottom: 10px;
-        font-family: 'Dancing Script', cursive;
-        font-weight: 700;
-        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
-    }
-    
-    /* Subtitle */
-    .subtitle {
-        color: #D22B69 !important;
-        font-size: 1.5rem;
-        margin-bottom: 40px;
-        font-family: 'Georgia', serif;
-        font-style: italic;
-    }
-    
     /* Music control */
     .music-control {
         position: fixed;
-        bottom: 25px;
-        right: 25px;
-        background: linear-gradient(135deg, #FF8BA0, #D22B69);
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #FF3366, #D22B69);
         color: white;
         border: none;
         border-radius: 50%;
-        width: 55px;
-        height: 55px;
-        font-size: 22px;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
         cursor: pointer;
         z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(210, 43, 105, 0.3);
-        transition: all 0.3s;
+        box-shadow: 0 4px 10px rgba(210, 43, 105, 0.3);
     }
     
     .music-control:hover {
         transform: scale(1.1);
-        box-shadow: 0 6px 18px rgba(210, 43, 105, 0.4);
     }
     
-    /* GIF container with border */
-    .gif-frame {
+    /* GIF container */
+    .gif-container {
         margin: 30px 0;
-        border-radius: 20px;
+        border-radius: 15px;
         overflow: hidden;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-        border: 8px solid white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         max-width: 500px;
     }
     
-    /* Back/restart button */
+    /* Action buttons */
     .action-button {
         background: linear-gradient(135deg, #FFB6C1, #FF8BA0) !important;
         color: #8B0A50 !important;
@@ -240,25 +256,27 @@ def local_css():
         padding: 12px 30px !important;
         font-size: 1.4rem !important;
         border-radius: 25px !important;
-        margin-top: 20px !important;
-        font-weight: 600 !important;
+        margin-top: 30px !important;
+        font-weight: bold !important;
     }
     
-    /* Container for buttons to ensure proper alignment */
-    .button-container {
+    /* Make sure Streamlit columns are properly aligned */
+    .stButton > button {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    /* Custom column styling for perfect alignment */
+    .stColumn {
         display: flex;
         justify-content: center;
-        gap: 30px;
-        margin: 30px 0;
-        flex-wrap: wrap;
-        width: 100%;
-        max-width: 600px;
+        align-items: center;
     }
     </style>
     """, unsafe_allow_html=True)
 
 def setup_audio():
-    """Audio setup with reliable playback"""
+    """Audio setup"""
     try:
         with open("music.mp3", "rb") as f:
             audio_bytes = f.read()
@@ -269,43 +287,36 @@ def setup_audio():
             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
         
-        <button id="musicControl" class="music-control" onclick="toggleMusic()" title="Toggle Music">🎵</button>
+        <button id="musicBtn" class="music-control" onclick="toggleMusic()">🎵</button>
         
         <script>
             const audio = document.getElementById('valentineMusic');
-            const musicBtn = document.getElementById('musicControl');
+            const musicBtn = document.getElementById('musicBtn');
             let isPlaying = false;
             
             function toggleMusic() {{
                 if (isPlaying) {{
                     audio.pause();
                     musicBtn.innerHTML = '🎵';
-                    musicBtn.style.background = 'linear-gradient(135deg, #FF8BA0, #D22B69)';
                 }} else {{
                     audio.volume = 0.6;
                     audio.play();
                     musicBtn.innerHTML = '🔊';
-                    musicBtn.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
                 }}
                 isPlaying = !isPlaying;
             }}
             
-            // Multiple attempts to play
             function tryPlay() {{
                 audio.volume = 0.6;
                 audio.play().then(() => {{
                     isPlaying = true;
                     musicBtn.innerHTML = '🔊';
-                    musicBtn.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
-                }}).catch(e => {{
-                    console.log('Auto-play prevented');
                 }});
             }}
             
             window.addEventListener('load', tryPlay);
             setTimeout(tryPlay, 1000);
             
-            // Play on first interaction
             document.addEventListener('click', () => {{
                 if (!isPlaying) tryPlay();
             }}, {{ once: true }});
@@ -329,73 +340,95 @@ st.markdown(setup_audio(), unsafe_allow_html=True)
 
 # Main app logic
 if st.session_state.page == 'landing':
-    # Landing page - Clean with ONE "Open me" button
+    # Landing page - Clean with NO "Open me" text
     st.markdown('<div class="perfect-center">', unsafe_allow_html=True)
     
-    # Main title
-    st.markdown('<h1 class="main-title">My Dearest Valentine 💝</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">A special message awaits you...</p>', unsafe_allow_html=True)
+    # Title
+    st.markdown('<h1 class="main-title">For My Special Valentine 💝</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="subtitle">Click the envelope below...</p>', unsafe_allow_html=True)
     
-    # Glowing heart
-    st.markdown('<div class="glowing-heart">❤️</div>', unsafe_allow_html=True)
+    # Heart
+    st.markdown('<div class="heartbeat">❤️</div>', unsafe_allow_html=True)
     
-    # Interactive envelope - ONLY ONE "Open me" text
-    # Using a container to make the entire area clickable
-    envelope_container = st.container()
-    with envelope_container:
-        st.markdown("""
-        <div onclick="document.querySelector('button[id=\"openEnvelope\"]').click();" 
-             style="cursor: pointer; display: inline-block;">
-            <div class="elegant-envelope">💌</div>
-            <div class="envelope-ribbon">Open Me</div>
+    # Interactive envelope - NO "Open me" text, just the envelope
+    # The envelope itself is clickable
+    st.markdown("""
+    <div onclick="document.getElementById('openBtn').click();" style="cursor: pointer; display: inline-block;">
+        <div class="checkered-envelope">
+            <div class="envelope-icon">✉️</div>
         </div>
-        """, unsafe_allow_html=True)
-        
-        # Hidden button that gets clicked via JavaScript
-        if st.button("Open Envelope", key="openEnvelope", type="primary", help=""):
-            st.session_state.page = 'valentine'
-            st.rerun()
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Romantic quote at bottom
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown('<p style="color: #D22B69; font-style: italic; font-size: 1.2rem;">"Love is not about how many days, months, or years you have been together. Love is about how much you love each other every single day."</p>', unsafe_allow_html=True)
+    # Hidden button - NO visible text
+    if st.button("Open", key="openBtn", help=""):
+        st.session_state.page = 'valentine'
+        st.rerun()
+    
+    # Add spacing
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.page == 'valentine':
-    # Valentine question page - Elegant and centered
+    # Valentine question page - Perfect alignment
     st.markdown('<div class="perfect-center">', unsafe_allow_html=True)
     
-    # Elegant question - NO heart, just beautiful text
-    st.markdown('<div class="elegant-question">Will you be my valentine, again?</div>', 
+    # Question only - NO heart
+    st.markdown('<div class="valentine-question">Will you be my valentine, again?</div>', 
                 unsafe_allow_html=True)
     
-    # Button container for perfect alignment
-    st.markdown('<div class="button-container">', unsafe_allow_html=True)
+    # PERFECTLY ALIGNED BUTTONS using custom container
+    st.markdown('<div class="aligned-buttons">', unsafe_allow_html=True)
     
-    col1, col2 = st.columns([1, 1], gap="large")
+    # Create two equal columns
+    col1, col2 = st.columns(2)
     
     with col1:
-        # Use custom CSS class for YES button
-        if st.button("YES 💖", key="yesValentine", use_container_width=True):
+        # YES button with custom styling
+        if st.button("YES 💖", key="yesBtn"):
+            st.markdown("""
+            <style>
+            div[data-testid="stButton"] > button[kind="primary"] {
+                background: linear-gradient(135deg, #FF3366, #FF0066) !important;
+                color: white !important;
+                padding: 18px 40px !important;
+                font-size: 1.8rem !important;
+                border-radius: 30px !important;
+                min-width: 160px !important;
+                height: 70px !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
             st.session_state.response = 'yes'
             st.session_state.page = 'response'
             st.rerun()
     
     with col2:
-        # Use custom CSS class for NO button
-        st.markdown('<div class="no-button-style">', unsafe_allow_html=True)
-        if st.button("NO", key="noValentine", use_container_width=True):
+        # NO button with custom styling
+        st.markdown("""
+        <style>
+        div[data-testid="stButton"] > button[kind="secondary"] {
+            background: linear-gradient(135deg, #666666, #444444) !important;
+            color: white !important;
+            padding: 18px 40px !important;
+            font-size: 1.8rem !important;
+            border-radius: 30px !important;
+            min-width: 160px !important;
+            height: 70px !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        if st.button("NO", key="noBtn"):
             st.session_state.response = 'no'
             st.session_state.page = 'response'
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Simple back button
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    if st.button("← Return", key="goBack", type="secondary"):
+    # Back button
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("← Back", key="backBtn"):
         st.session_state.page = 'landing'
         st.rerun()
     
@@ -406,47 +439,42 @@ elif st.session_state.page == 'response':
     st.markdown('<div class="perfect-center">', unsafe_allow_html=True)
     
     if st.session_state.response == 'yes':
-        # YES response - Romantic celebration
-        st.markdown('<div class="glowing-heart">💖</div>', unsafe_allow_html=True)
+        # YES response
+        st.markdown('<div class="heartbeat">💖</div>', unsafe_allow_html=True)
         
-        # GIF in fancy frame
-        st.markdown('<div class="gif-frame">', unsafe_allow_html=True)
+        # GIF
+        st.markdown('<div class="gif-container">', unsafe_allow_html=True)
         st.image(
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12afltvVzJIesM/giphy.gif",
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdT1n/12afltvVzJIesM/giphy.gif",
             use_column_width=True
         )
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Romantic messages
-        st.markdown('<div class="creative-response">You gonna have more of me now!</div>', 
+        # Text
+        st.markdown('<div class="response-text">You gonna have more of me now!</div>', 
                    unsafe_allow_html=True)
-        st.markdown('<div class="creative-response">I love you gullu pullu 💘</div>', 
+        st.markdown('<div class="response-text">I love you gullu pullu 💘</div>', 
                    unsafe_allow_html=True)
         
-        # Celebration effects
+        # Effects
         st.balloons()
-        st.snow()
         
     else:
-        # NO response - Elegant but sad
-        st.markdown('<div class="glowing-heart" style="color: #888; filter: grayscale(0.5);">💔</div>', 
+        # NO response
+        st.markdown('<div class="heartbeat" style="color: #666;">💔</div>', 
                    unsafe_allow_html=True)
         
-        # Simple elegant text (no emojis at start)
-        st.markdown('<div class="creative-response" style="color: #666;">Oh...</div>', 
+        # Text (no quotes)
+        st.markdown('<div class="response-text" style="color: #666;">Oh...</div>', 
                    unsafe_allow_html=True)
-        st.markdown('<div class="creative-response" style="color: #666;">You missed your chance</div>', 
+        st.markdown('<div class="response-text" style="color: #666;">You missed your chance</div>', 
                    unsafe_allow_html=True)
-        st.markdown('<div class="creative-response" style="color: #666;">Better luck next time!</div>', 
-                   unsafe_allow_html=True)
-        
-        # Subtle sad message
-        st.markdown('<p style="color: #999; font-style: italic; margin-top: 20px;">The heart remembers what the mind forgets...</p>', 
+        st.markdown('<div class="response-text" style="color: #666;">Better luck next time!</div>', 
                    unsafe_allow_html=True)
     
     # Restart button
     st.markdown("<br><br>", unsafe_allow_html=True)
-    if st.button("Start New Journey ✨", key="restartJourney", use_container_width=True, type="primary"):
+    if st.button("Start Over ✨", key="restartBtn"):
         st.session_state.page = 'landing'
         st.session_state.response = None
         st.rerun()
