@@ -1,7 +1,7 @@
 import streamlit as st
 import base64
 
-# Page configuration
+# Page configuration - IMPORTANT: Remove padding
 st.set_page_config(
     page_title="My Valentine ❤️",
     page_icon="❤️",
@@ -9,11 +9,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS with wandering envelope
+# CSS - Remove all white bars and padding
 def local_css():
     st.markdown("""
     <style>
-    /* Checkered baby pink background */
+    /* Remove all white bars and padding */
     .stApp {
         background-color: #FFE6E6 !important;
         background-image: 
@@ -24,103 +24,38 @@ def local_css():
         background-size: 30px 30px;
         background-position: 0 0, 0 15px, 15px -15px, -15px 0px;
         background-attachment: fixed;
-        overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
     
-    /* Main container to allow envelope to move */
-    .main-container {
-        position: relative;
+    /* Remove main container padding */
+    .main {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Remove block container padding */
+    .block-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    /* Remove all default Streamlit padding */
+    div[data-testid="stVerticalBlock"] {
+        gap: 0 !important;
+    }
+    
+    /* Full screen container */
+    .full-screen {
+        min-height: 100vh;
         width: 100%;
-        height: 85vh;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-align: center;
-    }
-    
-    /* Wandering envelope that moves around entire screen */
-    @keyframes wander {
-        0% {
-            transform: translate(0vw, 0vh) rotate(0deg) scale(1);
-            left: 10%;
-            top: 20%;
-        }
-        10% {
-            transform: translate(15vw, -10vh) rotate(15deg) scale(1.1);
-            left: 25%;
-            top: 10%;
-        }
-        20% {
-            transform: translate(-10vw, 20vh) rotate(-10deg) scale(0.9);
-            left: 15%;
-            top: 30%;
-        }
-        30% {
-            transform: translate(20vw, 15vh) rotate(20deg) scale(1.2);
-            left: 35%;
-            top: 45%;
-        }
-        40% {
-            transform: translate(-15vw, -5vh) rotate(-15deg) scale(0.95);
-            left: 20%;
-            top: 40%;
-        }
-        50% {
-            transform: translate(25vw, -15vh) rotate(25deg) scale(1.15);
-            left: 45%;
-            top: 25%;
-        }
-        60% {
-            transform: translate(-20vw, 25vh) rotate(-20deg) scale(0.85);
-            left: 25%;
-            top: 50%;
-        }
-        70% {
-            transform: translate(30vw, 10vh) rotate(30deg) scale(1.3);
-            left: 55%;
-            top: 60%;
-        }
-        80% {
-            transform: translate(-25vw, -20vh) rotate(-25deg) scale(0.9);
-            left: 30%;
-            top: 40%;
-        }
-        90% {
-            transform: translate(10vw, 30vh) rotate(10deg) scale(1.05);
-            left: 40%;
-            top: 70%;
-        }
-        100% {
-            transform: translate(0vw, 0vh) rotate(0deg) scale(1);
-            left: 10%;
-            top: 20%;
-        }
-    }
-    
-    .wandering-envelope {
-        position: absolute !important;
-        animation: wander 25s linear infinite;
-        cursor: pointer;
-        font-size: 6rem;
-        transition: all 0.3s ease;
-        z-index: 100;
-        filter: drop-shadow(0 10px 20px rgba(210, 43, 105, 0.4));
-        color: #D22B69;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 20px;
         padding: 20px;
-        box-shadow: 
-            0 0 0 10px rgba(255, 182, 193, 0.3),
-            0 0 0 20px rgba(255, 182, 193, 0.2),
-            0 0 0 30px rgba(255, 182, 193, 0.1);
-    }
-    
-    .wandering-envelope:hover {
-        animation-play-state: paused;
-        transform: scale(1.4) !important;
-        filter: drop-shadow(0 15px 30px rgba(210, 43, 105, 0.6));
-        z-index: 200;
+        margin: 0;
     }
     
     /* Heart animation */
@@ -136,51 +71,120 @@ def local_css():
         animation: heartbeat 1.2s infinite;
         color: #FF0000;
         text-align: center;
-        font-size: 7rem;
-        margin: 10px 0 30px 0;
-        filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3));
+        font-size: 9rem;
+        margin: 20px 0 40px 0;
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.4));
     }
     
-    /* Content that stays centered */
-    .centered-content {
-        position: relative;
-        z-index: 10;
-        background: rgba(255, 255, 255, 0.85);
-        padding: 40px;
+    /* Envelope that bounces around entire screen */
+    @keyframes bounceAround {
+        0% { transform: translate(0vw, 0vh) rotate(0deg); }
+        10% { transform: translate(70vw, 10vh) rotate(15deg); }
+        20% { transform: translate(20vw, 80vh) rotate(-10deg); }
+        30% { transform: translate(80vw, 60vh) rotate(20deg); }
+        40% { transform: translate(40vw, 20vh) rotate(-15deg); }
+        50% { transform: translate(10vw, 70vh) rotate(25deg); }
+        60% { transform: translate(60vw, 40vh) rotate(-20deg); }
+        70% { transform: translate(30vw, 90vh) rotate(30deg); }
+        80% { transform: translate(90vw, 30vh) rotate(-25deg); }
+        90% { transform: translate(50vw, 50vh) rotate(10deg); }
+        100% { transform: translate(0vw, 0vh) rotate(0deg); }
+    }
+    
+    .bouncing-envelope {
+        position: fixed;
+        animation: bounceAround 30s linear infinite;
+        cursor: pointer;
+        font-size: 5rem;
+        transition: all 0.3s ease;
+        z-index: 100;
+        filter: drop-shadow(0 10px 20px rgba(210, 43, 105, 0.5));
+        color: #D22B69;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 25px;
+        padding: 15px;
+        box-shadow: 
+            0 0 0 10px rgba(255, 182, 193, 0.4),
+            0 0 0 20px rgba(255, 182, 193, 0.2);
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bouncing-envelope:hover {
+        animation-play-state: paused;
+        transform: scale(1.5) !important;
+        filter: drop-shadow(0 20px 40px rgba(210, 43, 105, 0.7));
+        z-index: 200;
+    }
+    
+    /* Centered content box */
+    .content-box {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 40px 30px;
         border-radius: 30px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        max-width: 800px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        max-width: 700px;
         width: 90%;
+        text-align: center;
         backdrop-filter: blur(10px);
+        z-index: 10;
+        position: relative;
+        margin: 20px;
     }
     
     /* Main title */
     .main-title {
         color: #8B0A50 !important;
-        font-size: 3rem;
+        font-size: 3.5rem;
         margin: 0 0 10px 0;
         font-family: 'Brush Script MT', cursive;
         font-weight: bold;
-        text-align: center;
         text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
     }
     
     /* Subtitle */
     .subtitle {
         color: #D22B69 !important;
-        font-size: 1.4rem;
-        margin-bottom: 40px;
+        font-size: 1.6rem;
+        margin-bottom: 30px;
         font-family: 'Georgia', serif;
-        text-align: center;
         font-style: italic;
+    }
+    
+    /* "Click me" button - Beautiful styling */
+    .click-me-button {
+        background: linear-gradient(135deg, #FF3366, #FF0066) !important;
+        color: white !important;
+        border: none !important;
+        padding: 20px 50px !important;
+        text-align: center !important;
+        font-size: 2rem !important;
+        border-radius: 35px !important;
+        font-weight: bold !important;
+        font-family: 'Arial Rounded MT Bold', sans-serif !important;
+        box-shadow: 0 10px 25px rgba(255, 51, 102, 0.4) !important;
+        transition: all 0.3s ease !important;
+        margin: 30px 0 10px 0 !important;
+        cursor: pointer !important;
+        letter-spacing: 1px !important;
+        min-width: 300px !important;
+    }
+    
+    .click-me-button:hover {
+        transform: translateY(-5px) scale(1.05) !important;
+        box-shadow: 0 15px 35px rgba(255, 51, 102, 0.6) !important;
+        background: linear-gradient(135deg, #FF0066, #CC0052) !important;
     }
     
     /* Valentine question */
     .valentine-question {
         color: #8B0A50 !important;
-        font-size: 3.2rem !important;
+        font-size: 3.5rem !important;
         text-align: center;
-        margin: 50px 0 60px 0;
+        margin: 50px 0 70px 0;
         font-family: 'Brush Script MT', cursive;
         font-weight: bold;
         line-height: 1.2;
@@ -190,19 +194,18 @@ def local_css():
     /* Response text */
     .response-text {
         color: #8B0A50 !important;
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         text-align: center;
-        margin: 20px 0;
+        margin: 25px 0;
         font-family: 'Brush Script MT', cursive;
         font-weight: bold;
-        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
     }
     
-    /* Perfectly aligned buttons */
-    .buttons-container {
+    /* Buttons container for YES/NO */
+    .buttons-row {
         display: flex;
         justify-content: center;
-        gap: 40px;
+        gap: 50px;
         margin: 50px 0 30px 0;
         width: 100%;
     }
@@ -212,15 +215,13 @@ def local_css():
         color: white !important;
         border: none !important;
         padding: 20px 45px !important;
-        text-align: center !important;
-        font-size: 1.8rem !important;
+        font-size: 1.9rem !important;
         border-radius: 30px !important;
         font-weight: bold !important;
-        min-width: 170px !important;
-        height: 75px !important;
+        min-width: 180px !important;
+        height: 80px !important;
         box-shadow: 0 8px 20px rgba(255, 51, 102, 0.4) !important;
         transition: all 0.3s ease !important;
-        margin: 0 !important;
     }
     
     .valentine-button:hover {
@@ -246,21 +247,21 @@ def local_css():
     /* Music control */
     .music-control {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 25px;
+        right: 25px;
         background: linear-gradient(135deg, #FF3366, #D22B69);
         color: white;
         border: none;
         border-radius: 50%;
-        width: 55px;
-        height: 55px;
-        font-size: 22px;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
         cursor: pointer;
         z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 5px 15px rgba(210, 43, 105, 0.4);
+        box-shadow: 0 6px 15px rgba(210, 43, 105, 0.4);
     }
     
     .music-control:hover {
@@ -269,58 +270,42 @@ def local_css():
     
     /* GIF container */
     .gif-container {
-        margin: 30px 0;
+        margin: 40px 0;
         border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         max-width: 500px;
         margin-left: auto;
         margin-right: auto;
     }
     
-    /* Action button */
+    /* Back/Start Over buttons */
     .action-button {
         background: linear-gradient(135deg, #FFB6C1, #FF8BA0) !important;
         color: #8B0A50 !important;
         border: none !important;
-        padding: 15px 35px !important;
-        font-size: 1.5rem !important;
-        border-radius: 25px !important;
-        margin-top: 30px !important;
+        padding: 15px 40px !important;
+        font-size: 1.6rem !important;
+        border-radius: 30px !important;
+        margin-top: 40px !important;
         font-weight: bold !important;
     }
     
-    /* Page containers */
-    .page-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 85vh;
-        text-align: center;
-        padding: 20px;
-        width: 100%;
+    /* Remove all default button styles */
+    button[kind="primary"], button[kind="secondary"] {
+        background: transparent !important;
     }
     
-    /* Make sure envelope stays on top */
-    .wandering-envelope-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 5;
-    }
-    
-    .wandering-envelope-container > div {
-        pointer-events: auto;
+    /* Make sure no black button appears */
+    div[data-testid="stButton"] > button {
+        border: none !important;
+        background: transparent !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 def setup_audio():
-    """Audio setup"""
+    """Audio setup without extra buttons"""
     try:
         with open("music.mp3", "rb") as f:
             audio_bytes = f.read()
@@ -350,28 +335,28 @@ def setup_audio():
                 isPlaying = !isPlaying;
             }}
             
+            // Auto-play with multiple attempts
             function tryPlay() {{
                 audio.volume = 0.6;
                 audio.play().then(() => {{
                     isPlaying = true;
                     musicBtn.innerHTML = '🔊';
+                }}).catch(e => {{
+                    console.log('Auto-play prevented');
                 }});
             }}
             
             window.addEventListener('load', tryPlay);
             setTimeout(tryPlay, 1000);
-            
-            document.addEventListener('click', () => {{
-                if (!isPlaying) tryPlay();
-            }}, {{ once: true }});
+            setTimeout(tryPlay, 3000);
             
             // Make envelope clickable
             document.addEventListener('DOMContentLoaded', function() {{
-                const envelope = document.querySelector('.wandering-envelope');
+                const envelope = document.querySelector('.bouncing-envelope');
                 if (envelope) {{
                     envelope.addEventListener('click', function() {{
-                        const openBtn = document.getElementById('openBtn');
-                        if (openBtn) openBtn.click();
+                        const clickBtn = document.querySelector('.click-me-button');
+                        if (clickBtn) clickBtn.click();
                     }});
                 }}
             }});
@@ -387,7 +372,7 @@ if 'page' not in st.session_state:
 if 'response' not in st.session_state:
     st.session_state.response = None
 
-# Apply CSS
+# Apply CSS - REMOVES ALL WHITE BARS
 local_css()
 
 # Setup audio
@@ -395,45 +380,47 @@ st.markdown(setup_audio(), unsafe_allow_html=True)
 
 # Main app logic
 if st.session_state.page == 'landing':
-    # Landing page with wandering envelope
-    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    # LANDING PAGE: Only heart, bouncing envelope, and "Click me" button
     
-    # Wandering envelope that moves around entire screen
+    # Bouncing envelope - moves around entire screen
     st.markdown("""
-    <div class="wandering-envelope-container">
-        <div class="wandering-envelope" title="Click me!">💌</div>
-    </div>
+    <div class="bouncing-envelope" title="Click me!">💌</div>
     """, unsafe_allow_html=True)
     
-    # Centered content
-    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
+    # Full screen centered content
+    st.markdown('<div class="full-screen">', unsafe_allow_html=True)
+    st.markdown('<div class="content-box">', unsafe_allow_html=True)
     
     # Title
-    st.markdown('<h1 class="main-title">For My Valentine ❤️</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Catch the floating envelope!</p>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-title">For My Valentine 💖</h1>', unsafe_allow_html=True)
     
-    # Heart
+    # Throbbing heart
     st.markdown('<div class="heartbeat">❤️</div>', unsafe_allow_html=True)
     
-    # Hidden button for envelope click
-    if st.button(" ", key="openBtn", help="Click the floating envelope!"):
+    # Subtitle
+    st.markdown('<p class="subtitle">Find and click the floating envelope, or use the button below</p>', unsafe_allow_html=True)
+    
+    # "Click me to open the envelope" button - ONLY ONE BUTTON VISIBLE
+    # Using custom CSS to style it beautifully
+    if st.button("Click me to open the envelope ✨", key="openBtn", help="Click here or click the floating envelope!"):
         st.session_state.page = 'valentine'
         st.rerun()
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Close centered-content
-    st.markdown('</div>', unsafe_allow_html=True)  # Close main-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close content-box
+    st.markdown('</div>', unsafe_allow_html=True)  # Close full-screen
 
 elif st.session_state.page == 'valentine':
-    # Valentine question page
-    st.markdown('<div class="page-container">', unsafe_allow_html=True)
-    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
+    # VALENTINE QUESTION PAGE
+    
+    st.markdown('<div class="full-screen">', unsafe_allow_html=True)
+    st.markdown('<div class="content-box">', unsafe_allow_html=True)
     
     # Question only - NO heart
     st.markdown('<div class="valentine-question">Will you be my valentine, again?</div>', 
                 unsafe_allow_html=True)
     
-    # Perfectly aligned buttons
-    st.markdown('<div class="buttons-container">', unsafe_allow_html=True)
+    # YES/NO buttons - perfectly aligned
+    st.markdown('<div class="buttons-row">', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
@@ -449,7 +436,7 @@ elif st.session_state.page == 'valentine':
             st.session_state.page = 'response'
             st.rerun()
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Close buttons-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close buttons-row
     
     # Back button
     st.markdown("<br>", unsafe_allow_html=True)
@@ -457,13 +444,14 @@ elif st.session_state.page == 'valentine':
         st.session_state.page = 'landing'
         st.rerun()
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Close centered-content
-    st.markdown('</div>', unsafe_allow_html=True)  # Close page-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close content-box
+    st.markdown('</div>', unsafe_allow_html=True)  # Close full-screen
 
 elif st.session_state.page == 'response':
-    # Response page
-    st.markdown('<div class="page-container">', unsafe_allow_html=True)
-    st.markdown('<div class="centered-content">', unsafe_allow_html=True)
+    # RESPONSE PAGE
+    
+    st.markdown('<div class="full-screen">', unsafe_allow_html=True)
+    st.markdown('<div class="content-box">', unsafe_allow_html=True)
     
     if st.session_state.response == 'yes':
         # YES response
@@ -499,12 +487,12 @@ elif st.session_state.page == 'response':
         st.markdown('<div class="response-text" style="color: #666;">Better luck next time!</div>', 
                    unsafe_allow_html=True)
     
-    # Restart button
+    # Start Over button
     st.markdown("<br><br>", unsafe_allow_html=True)
     if st.button("Start Over ✨", key="restartBtn", use_container_width=True):
         st.session_state.page = 'landing'
         st.session_state.response = None
         st.rerun()
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Close centered-content
-    st.markdown('</div>', unsafe_allow_html=True)  # Close page-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close content-box
+    st.markdown('</div>', unsafe_allow_html=True)  # Close full-screen
