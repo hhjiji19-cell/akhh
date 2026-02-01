@@ -480,4 +480,4 @@ elif st.session_state.page == 'response':
             st.session_state.response = None
             st.rerun()
         
-        st.markdown('</div>', unsafe_allow_html=True)v
+        st.markdown('</div>', unsafe_allow_html=True)
