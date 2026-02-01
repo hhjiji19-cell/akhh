@@ -1,4 +1,5 @@
 import streamlit as st
+import base64
 
 st.set_page_config(page_title="My Valentine ❤️", layout="wide", initial_sidebar_state="collapsed")
 
@@ -18,17 +19,38 @@ st.markdown("""
     padding-left: 0rem;
     padding-right: 0rem;
 }
-.css-1d391kg {padding-top: 0rem;}  /* page container */
+.css-1d391kg {padding-top: 0rem;}
 
 /* Hide menu/footer */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
 
-/* Baby pink background */
+/* Checkered baby pink background */
 .stApp {
     background-color: #FFE6E6 !important;
+    background-image: 
+        linear-gradient(45deg, #ffb6c1 25%, transparent 25%),
+        linear-gradient(-45deg, #ffb6c1 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ffb6c1 75%),
+        linear-gradient(-45deg, transparent 75%, #ffb6c1 75%);
+    background-size: 30px 30px;
+    background-position: 0 0, 0 15px, 15px -15px, -15px 0px;
+    background-attachment: fixed;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Center container */
+.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
 }
 
 /* Throbbing heart */
@@ -36,7 +58,6 @@ header {visibility: hidden;}
     animation: heartbeat 1.2s infinite;
     color: red;
     font-size: 10rem;
-    text-align: center;
     margin: 50px 0;
     filter: drop-shadow(0 0 20px rgba(255,0,0,0.5));
 }
@@ -66,16 +87,6 @@ header {visibility: hidden;}
     filter: drop-shadow(0 10px 20px rgba(210,43,105,0.5));
 }
 
-/* Centered container */
-.centered {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 80vh;
-    text-align: center;
-}
-
 /* Landing page button */
 .landing-button {
     background: linear-gradient(135deg, #FF3366, #FF0066);
@@ -93,13 +104,52 @@ header {visibility: hidden;}
     transform: translateY(-5px) scale(1.05);
     box-shadow: 0 15px 30px rgba(255,51,102,0.6);
 }
+
+/* Valentine question */
+.valentine-question {
+    color: #D22B69;
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 50px 0;
+}
+
+/* Buttons container */
+.buttons-container {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+/* YES/NO buttons */
+.valentine-button {
+    background: linear-gradient(135deg, #FF3366, #FF0066);
+    color: white;
+    border: none;
+    padding: 20px 50px;
+    font-size: 1.8rem;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.valentine-button:hover {
+    transform: translateY(-5px) scale(1.05);
+}
+
+/* NO button style */
+.no-button {
+    background: linear-gradient(135deg, #666, #444);
+}
+.no-button:hover {
+    background: linear-gradient(135deg, #555, #333);
+}
 </style>
 """, unsafe_allow_html=True)
 
 # ---------- AUDIO SETUP ----------
 def setup_audio():
     try:
-        import base64
         with open("music.mp3", "rb") as f:
             audio_bytes = f.read()
             b64 = base64.b64encode(audio_bytes).decode()
@@ -111,7 +161,6 @@ def setup_audio():
         return html
     except:
         return ""
-
 st.markdown(setup_audio(), unsafe_allow_html=True)
 
 # ---------- LANDING PAGE ----------
@@ -124,7 +173,7 @@ if st.session_state.page == 'landing':
     <div class="wandering-envelope" onclick="document.getElementById('openBtn').click()">💌</div>
     """, unsafe_allow_html=True)
     
-    # Button to open envelope
+    # Landing page button
     if st.button("Click me to open the envelope", key="openBtn"):
         st.session_state.page = 'valentine'
         st.rerun()
@@ -134,9 +183,11 @@ if st.session_state.page == 'landing':
 # ---------- VALENTINE QUESTION PAGE ----------
 elif st.session_state.page == 'valentine':
     st.markdown('<div class="centered">', unsafe_allow_html=True)
-    st.markdown('<h2 style="font-size:3rem; color:#D22B69;">Will you be my Valentine, again?</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="valentine-question">Will you be my Valentine, again?</div>', unsafe_allow_html=True)
     
+    st.markdown('<div class="buttons-container">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
+    
     with col1:
         if st.button("YES 💖"):
             st.session_state.response = 'yes'
@@ -149,6 +200,7 @@ elif st.session_state.page == 'valentine':
             st.rerun()
     
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------- RESPONSE PAGE ----------
 elif st.session_state.page == 'response':
@@ -156,7 +208,11 @@ elif st.session_state.page == 'response':
     
     if st.session_state.response == 'yes':
         st.markdown('<div class="heartbeat">💖</div>', unsafe_allow_html=True)
-        st.markdown('<h2 style="color:#D22B69;">Yay! I love you gullu pullu ❤️</h2>', unsafe_allow_html=True)
+        st.image(
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdT1n/12afltvVzJIesM/giphy.gif",
+            width=400
+        )
+        st.markdown('<h2 style="color:#D22B69;">I love you gullu pullu 💘</h2>', unsafe_allow_html=True)
         st.balloons()
     else:
         st.markdown('<div class="heartbeat" style="color:#666;">💔</div>', unsafe_allow_html=True)
