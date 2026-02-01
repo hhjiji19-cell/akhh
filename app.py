@@ -70,6 +70,9 @@ body[data-page]:not([data-page="landing"]) {
     height: 120px;
     background: white;
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     border-radius: 12px;
     text-align: center;
     line-height: 120px;
@@ -77,15 +80,7 @@ body[data-page]:not([data-page="landing"]) {
     color: #ff69b4;
     cursor: pointer;
     box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-    animation: float 8s infinite ease-in-out;
     font-size: 18px;
-}
-@keyframes float {
-    0% { top: 5%; left: 5%; }
-    25% { top: 20%; left: 80%; }
-    50% { top: 70%; left: 40%; }
-    75% { top: 40%; left: 70%; }
-    100% { top: 5%; left: 5%; }
 }
 
 /* Centered text */
@@ -144,13 +139,14 @@ autoplay_audio()
 if st.session_state.stage == "landing":
     st.markdown('<div class="big-heart">💖</div>', unsafe_allow_html=True)
 
+    # Envelope
     if not st.session_state.envelope_opened:
         st.markdown("""
         <div class="envelope" onclick="document.querySelector('.envelope').style.display='none';">
-            Open me 💌
+            💌 Click me
         </div>
         """, unsafe_allow_html=True)
-        if st.button("💌 Open the envelope"):
+        if st.button("Envelope clicked (hidden trigger)"):
             st.session_state.envelope_opened = True
             st.session_state.stage = "question"
             st.rerun()
@@ -170,12 +166,9 @@ elif st.session_state.stage == "question":
     with col2:
         st.markdown("""
         <button class="runaway"
-        onmouseover="moveButton(this)">
+        onmouseover="moveButton(this)" onclick="window.location.href=window.location.href + '#no';">
         No 😏
         </button>
-        <script>
-        document.querySelector('.runaway').onclick = function(){window.location.href=window.location.href + '#no';};
-        </script>
         """, unsafe_allow_html=True)
 
     # Detect URL hash for "No" click
