@@ -63,26 +63,6 @@ def local_css():
         transform: scale(1.1);
     }
     
-    /* Envelope open button */
-    .open-btn {
-        background: linear-gradient(45deg, #ff69b4, #ff1493);
-        color: white;
-        border: none;
-        padding: 15px 40px;
-        font-size: 20px;
-        border-radius: 30px;
-        cursor: pointer;
-        font-weight: bold;
-        box-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
-        transition: all 0.3s ease;
-        margin-top: 20px;
-    }
-    
-    .open-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 20px rgba(255, 105, 180, 0.5);
-    }
-    
     /* Question text styling - DARK PINK */
     .question-text {
         color: #C2185B !important;
@@ -127,15 +107,27 @@ def local_css():
         box-shadow: 0 8px 20px rgba(255, 68, 68, 0.5);
     }
     
-    /* Center content */
+    /* Center content - FIXED ALIGNMENT */
     .centered {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        min-height: 80vh;
+        min-height: 100vh;
+        width: 100%;
         position: relative;
+        padding: 20px;
+    }
+    
+    /* Main container for perfect centering */
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: 30px;
     }
     
     /* Hide audio player and Streamlit default elements */
@@ -179,6 +171,19 @@ def local_css():
     /* Make sure all text is dark pink */
     h1, h2, h3, h4, h5, h6, p, div, span {
         color: #C2185B !important;
+    }
+    
+    /* Streamlit column centering fix */
+    .st-emotion-cache-1v0mbdj {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    
+    /* Fix for column alignment */
+    [data-testid="column"] {
+        display: flex !important;
+        justify-content: center !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -261,109 +266,115 @@ st.markdown(autoplay_audio(), unsafe_allow_html=True)
 
 # Main app logic
 if st.session_state.page == 'landing':
-    # Landing page
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # Landing page - Simplified layout for better alignment
+    st.markdown('<div class="centered">', unsafe_allow_html=True)
     
+    # Container for everything
+    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    
+    # Big red throbbing heart
+    st.markdown('<div class="throbbing-heart">❤️</div>', unsafe_allow_html=True)
+    
+    # Envelope
+    st.markdown("""
+    <div class="envelope-container">
+        <div class="envelope">✉️</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Button to open envelope
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="centered">', unsafe_allow_html=True)
-        
-        # Big red throbbing heart
-        st.markdown('<div class="throbbing-heart">❤️</div>', unsafe_allow_html=True)
-        
-        # Envelope and button
-        st.markdown("""
-        <div class="envelope-container">
-            <div class="envelope">✉️</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Button to open envelope
-        if st.button("Click me to open the envelope", key="open_envelope"):
+        if st.button("Click me to open the envelope", key="open_envelope", use_container_width=True):
             st.session_state.page = 'question'
             st.rerun()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close main-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close centered
 
 elif st.session_state.page == 'question':
     # Question page
-    col1, col2, col3 = st.columns([1, 2, 1])
+    st.markdown('<div class="centered">', unsafe_allow_html=True)
     
-    with col2:
-        st.markdown('<div class="centered">', unsafe_allow_html=True)
-        
-        # Question text
-        st.markdown('<div class="question-text">Will you be my valentine, again?</div>', unsafe_allow_html=True)
-        
-        # Create two columns for buttons
-        col_yes, col_no = st.columns(2)
-        
-        with col_yes:
-            if st.button("YES ❤️", key="yes_button", use_container_width=True):
-                st.session_state.page = 'yes_response'
-                st.rerun()
-        
-        with col_no:
-            if st.button("NO 💔", key="no_button", use_container_width=True):
-                st.session_state.page = 'no_response'
-                st.rerun()
-        
-        # Back button
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("← Back", key="back_to_landing"):
-            st.session_state.page = 'landing'
+    # Container for everything
+    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    
+    # Question text
+    st.markdown('<div class="question-text">Will you be my valentine, again?</div>', unsafe_allow_html=True)
+    
+    # Create two columns for buttons
+    col_yes, col_no = st.columns(2)
+    
+    with col_yes:
+        if st.button("YES ❤️", key="yes_button", use_container_width=True):
+            st.session_state.page = 'yes_response'
             st.rerun()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col_no:
+        if st.button("NO 💔", key="no_button", use_container_width=True):
+            st.session_state.page = 'no_response'
+            st.rerun()
+    
+    # Back button
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("← Back", key="back_to_landing", use_container_width=False):
+        st.session_state.page = 'landing'
+        st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close main-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close centered
 
 elif st.session_state.page == 'yes_response':
     # YES response page
-    col1, col2, col3 = st.columns([1, 2, 1])
+    st.markdown('<div class="centered">', unsafe_allow_html=True)
     
-    with col2:
-        st.markdown('<div class="centered">', unsafe_allow_html=True)
-        
-        # Show the GIF
-        st.markdown('<div class="gif-container">', unsafe_allow_html=True)
-        st.image(
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12afltvVzJIesM/giphy.gif",
-            use_column_width=True
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Text under GIF
-        st.markdown('<div class="response-text">Another year of you tolerating me,<br><br>I love you so much gullu pullu ❤️</div>', 
-                   unsafe_allow_html=True)
-        
-        # Celebration effects
-        st.balloons()
-        
-        # Button to go back
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        if st.button("✨ Start Over ✨", key="start_over_from_yes", use_container_width=True):
-            st.session_state.page = 'landing'
-            st.rerun()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Container for everything
+    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    
+    # Show the GIF
+    st.markdown('<div class="gif-container">', unsafe_allow_html=True)
+    st.image(
+        "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjUxYmZiNmVyYmt2aTVlMHpxY3RnejRsa3M3dm9wNnAza2VwcTZtNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/12afltvVzJIesM/giphy.gif",
+        use_column_width=True
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Text under GIF
+    st.markdown('<div class="response-text">Another year of you tolerating me,<br><br>I love you so much gullu pullu ❤️</div>', 
+               unsafe_allow_html=True)
+    
+    # Celebration effects
+    st.balloons()
+    
+    # Button to go back
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    if st.button("✨ Start Over ✨", key="start_over_from_yes", use_container_width=True):
+        st.session_state.page = 'landing'
+        st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close main-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close centered
 
 elif st.session_state.page == 'no_response':
     # NO response page
-    col1, col2, col3 = st.columns([1, 2, 1])
+    st.markdown('<div class="centered">', unsafe_allow_html=True)
     
-    with col2:
-        st.markdown('<div class="centered">', unsafe_allow_html=True)
-        
-        # Broken heart
-        st.markdown('<div class="throbbing-heart" style="color: #666; animation: throb 2s infinite;">💔</div>', 
-                   unsafe_allow_html=True)
-        
-        # Text
-        st.markdown('<div class="response-text">Oh,<br>You missed your chance 😌<br>Better luck next time!</div>', 
-                   unsafe_allow_html=True)
-        
-        # Button to go back
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        if st.button("✨ Start Over ✨", key="start_over_from_no", use_container_width=True):
-            st.session_state.page = 'landing'
-            st.rerun()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Container for everything
+    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    
+    # Broken heart
+    st.markdown('<div class="throbbing-heart" style="color: #666; animation: throb 2s infinite;">💔</div>', 
+               unsafe_allow_html=True)
+    
+    # Text
+    st.markdown('<div class="response-text">Oh,<br>You missed your chance 😌<br>Better luck next time!</div>', 
+               unsafe_allow_html=True)
+    
+    # Button to go back
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    if st.button("✨ Start Over ✨", key="start_over_from_no", use_container_width=True):
+        st.session_state.page = 'landing'
+        st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close main-container
+    st.markdown('</div>', unsafe_allow_html=True)  # Close centered
