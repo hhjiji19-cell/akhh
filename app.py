@@ -1,6 +1,6 @@
 import streamlit as st
-from pathlib import Path
-from audio_handler import get_audio_html
+import base64
+import random
 
 # Page configuration
 st.set_page_config(
@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for all the effects
+# Custom CSS with all fixes
 def local_css():
     st.markdown("""
     <style>
@@ -40,28 +40,57 @@ def local_css():
         margin: 20px 0;
     }
     
-    /* Floating envelope */
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-        100% { transform: translateY(0px); }
+    /* Floating envelope animation that moves around */
+    @keyframes floatAround {
+        0% { 
+            transform: translate(0px, 0px) rotate(0deg);
+        }
+        25% { 
+            transform: translate(100px, -50px) rotate(5deg);
+        }
+        50% { 
+            transform: translate(-80px, 30px) rotate(-5deg);
+        }
+        75% { 
+            transform: translate(50px, -30px) rotate(3deg);
+        }
+        100% { 
+            transform: translate(0px, 0px) rotate(0deg);
+        }
     }
     
     .floating-envelope {
-        animation: float 3s ease-in-out infinite;
+        animation: floatAround 15s ease-in-out infinite;
         cursor: pointer;
         text-align: center;
-        font-size: 6rem;
+        font-size: 8rem;
         margin: 40px 0;
+        position: relative;
         transition: all 0.3s ease;
+        filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
     }
     
     .floating-envelope:hover {
-        transform: scale(1.1);
-        color: #FF4444;
+        transform: scale(1.3);
+        animation-play-state: paused;
+        filter: drop-shadow(0 10px 25px rgba(0,0,0,0.3));
     }
     
-    /* Heart with text inside */
+    /* Envelope text */
+    .envelope-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, 50px);
+        color: #D81B60;
+        font-weight: bold;
+        font-size: 1.5rem;
+        white-space: nowrap;
+        text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    
+    /* Heart with text inside - DARK PINK TEXT */
     .heart-container {
         position: relative;
         display: inline-block;
@@ -73,12 +102,13 @@ def local_css():
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        color: white;
+        color: #C2185B !important;  /* Dark pink */
         font-weight: bold;
-        font-size: 1.5rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        font-size: 1.8rem;
+        text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
         width: 80%;
         line-height: 1.5;
+        font-family: 'Brush Script MT', cursive;
     }
     
     /* Buttons styling */
@@ -93,6 +123,7 @@ def local_css():
         border-radius: 25px;
         transition: all 0.3s;
         font-weight: bold;
+        font-family: 'Arial Rounded MT Bold', sans-serif;
     }
     
     .stButton > button:hover {
@@ -118,6 +149,16 @@ def local_css():
         justify-content: center;
         text-align: center;
         min-height: 80vh;
+        position: relative;
+    }
+    
+    /* Title styling - DARK PINK */
+    .title {
+        color: #C2185B !important;  /* Dark pink */
+        font-size: 3rem;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+        font-family: 'Brush Script MT', cursive;
     }
     
     /* Hide audio player and Streamlit default elements */
@@ -125,34 +166,113 @@ def local_css():
         display: none !important;
     }
     
-    .stAudio {
-        display: none !important;
-    }
-    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Title styling */
-    .title {
-        color: #FF0000;
-        font-size: 2.5rem;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    /* Response text - DARK PINK */
+    .response-text {
+        color: #C2185B !important;
+        font-size: 2rem;
+        text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        font-family: 'Comic Sans MS', cursive;
+    }
+    
+    /* Music player styling */
+    .music-player {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 1000;
     }
     </style>
     """, unsafe_allow_html=True)
+
+def autoplay_audio():
+    """Create audio autoplay with multiple attempts"""
+    try:
+        # Read and encode the audio file
+        with open("music.mp3", "rb") as f:
+            audio_bytes = f.read()
+            b64 = base64.b64encode(audio_bytes).decode()
+        
+        # Create audio element with multiple play attempts
+        audio_html = f"""
+        <audio id="valentineMusic" loop style="display: none;">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+        
+        <script>
+            function playMusic() {{
+                const audio = document.getElementById('valentineMusic');
+                if (audio) {{
+                    audio.volume = 0.7;
+                    
+                    // Try to play immediately
+                    const playPromise = audio.play();
+                    
+                    if (playPromise !== undefined) {{
+                        playPromise
+                            .then(_ => console.log("Music playing automatically"))
+                            .catch(error => {{
+                                console.log("Autoplay prevented:", error);
+                                // Show a play button that user can click
+                                createPlayButton();
+                            }});
+                    }}
+                }}
+            }}
+            
+            function createPlayButton() {{
+                const button = document.createElement('button');
+                button.innerHTML = '🎵 Click to Play Music';
+                button.style.position = 'fixed';
+                button.style.bottom = '10px';
+                button.style.right = '10px';
+                button.style.zIndex = '1000';
+                button.style.padding = '10px 15px';
+                button.style.background = '#FF4444';
+                button.style.color = 'white';
+                button.style.border = 'none';
+                button.style.borderRadius = '20px';
+                button.style.cursor = 'pointer';
+                button.onclick = function() {{
+                    document.getElementById('valentineMusic').play();
+                    button.remove();
+                }};
+                document.body.appendChild(button);
+            }}
+            
+            // Try to play when page loads
+            window.addEventListener('load', playMusic);
+            
+            // Also try when user interacts with the page
+            document.addEventListener('click', function() {{
+                const audio = document.getElementById('valentineMusic');
+                if (audio && audio.paused) {{
+                    audio.play();
+                }}
+            }});
+            
+            // Try after a short delay
+            setTimeout(playMusic, 1000);
+        </script>
+        """
+        return audio_html
+    except Exception as e:
+        return f"<!-- Audio error: {str(e)} -->"
 
 # Initialize session state
 if 'page' not in st.session_state:
     st.session_state.page = 'landing'
 if 'response' not in st.session_state:
     st.session_state.response = None
-if 'music_played' not in st.session_state:
-    st.session_state.music_played = False
 
 # Apply custom CSS
 local_css()
+
+# Add background music
+st.markdown(autoplay_audio(), unsafe_allow_html=True)
 
 # Main app logic
 if st.session_state.page == 'landing':
@@ -162,35 +282,54 @@ if st.session_state.page == 'landing':
     with col2:
         st.markdown('<div class="centered">', unsafe_allow_html=True)
         
-        # Add background music - THIS IS THE INTEGRATION YOU ASKED FOR
-        if Path("music.mp3").exists():
-            audio_html = get_audio_html("music.mp3")
-            st.markdown(audio_html, unsafe_allow_html=True)
-        else:
-            st.warning("music.mp3 file not found. Please add it to the same directory.")
-        
-        # Title
-        st.markdown('<h1 class="title">For My Valentine ❤️</h1>', unsafe_allow_html=True)
+        # Title with dark pink color
+        st.markdown('<h1 class="title">For My Special Someone ❤️</h1>', unsafe_allow_html=True)
         
         # Big red throbbing heart
         st.markdown('<div class="throbbing-heart">❤️</div>', unsafe_allow_html=True)
         
-        # Floating envelope
-        st.markdown('<div class="floating-envelope">✉️</div>', unsafe_allow_html=True)
+        # Interactive floating envelope with "Open me" text
+        st.markdown("""
+        <div style="position: relative; display: inline-block;">
+            <div class="floating-envelope" id="envelope">✉️</div>
+            <div class="envelope-text">Open me!</div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Instruction text
-        st.markdown("### Click below to open the envelope!")
+        # Hidden button that gets triggered when envelope is clicked
+        # Using HTML to make the entire envelope area clickable
+        st.markdown("""
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const envelope = document.querySelector('.floating-envelope');
+                const parentDiv = envelope.closest('div[style*="position: relative"]');
+                
+                if (parentDiv) {
+                    parentDiv.style.cursor = 'pointer';
+                    parentDiv.addEventListener('click', function() {
+                        // Find and click the Streamlit button
+                        const buttons = document.querySelectorAll('button');
+                        const envelopeButton = Array.from(buttons).find(btn => 
+                            btn.textContent.includes('envelope') || 
+                            btn.id.includes('envelope')
+                        );
+                        if (envelopeButton) {
+                            envelopeButton.click();
+                        }
+                    });
+                }
+            });
+        </script>
+        """, unsafe_allow_html=True)
         
-        # Button to open envelope
-        if st.button("🎀 Open Envelope 🎀", key="envelope_trigger", 
-                    use_container_width=True, type="primary"):
+        # This button will be triggered when envelope is clicked
+        if st.button("Open Envelope", key="envelope_trigger", help="Click the envelope above!"):
             st.session_state.page = 'valentine'
             st.rerun()
         
-        # Music instructions
-        st.markdown("---")
-        st.markdown("*🎵 Music should play automatically. If not, click anywhere on the page.*")
-            
+        # Add some spacing
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
+        
         st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.page == 'valentine':
@@ -200,7 +339,7 @@ elif st.session_state.page == 'valentine':
     with col2:
         st.markdown('<div class="centered">', unsafe_allow_html=True)
         
-        # Heart with text inside
+        # Heart with text inside - DARK PINK TEXT
         st.markdown('''
         <div class="heart-container">
             <div class="throbbing-heart">❤️</div>
@@ -218,17 +357,14 @@ elif st.session_state.page == 'valentine':
                 st.rerun()
         
         with col_no:
-            # Add custom class for no button
-            st.markdown('<div class="no-button">', unsafe_allow_html=True)
-            if st.button("NO 😢", key="no_button", use_container_width=True):
+            if st.button("NO 💔", key="no_button", use_container_width=True):
                 st.session_state.response = 'no'
                 st.session_state.page = 'response'
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
         
-        # Back button
+        # Back button (small and subtle)
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("← Back to Envelope", key="back_from_valentine"):
+        if st.button("← Back", key="back_from_valentine"):
             st.session_state.page = 'landing'
             st.rerun()
         
@@ -242,9 +378,11 @@ elif st.session_state.page == 'response':
         st.markdown('<div class="centered">', unsafe_allow_html=True)
         
         if st.session_state.response == 'yes':
-            # YES response
-            st.markdown("## 🎉 You gonna have more of me now! 🎉")
-            st.markdown("## 💖 I love you gullu pullu 💖")
+            # YES response - DARK PINK TEXT
+            st.markdown('<div class="response-text">🎉 You gonna have more of me now! 🎉</div>', 
+                       unsafe_allow_html=True)
+            st.markdown('<div class="response-text">💖 I love you gullu pullu 💖</div>', 
+                       unsafe_allow_html=True)
             
             # Display the GIF
             st.image(
@@ -256,28 +394,44 @@ elif st.session_state.page == 'response':
             st.balloons()
             st.snow()
             
-            # Additional romantic message
-            st.markdown("---")
-            st.markdown("### Every moment with you is special! ❤️")
-            
         else:
-            # NO response
+            # NO response - DARK PINK TEXT
             st.markdown('<div class="throbbing-heart" style="color: #666; animation: throb 2s infinite;">💔</div>', 
                        unsafe_allow_html=True)
-            st.markdown("## 😔 Oh...")
-            st.markdown("## 😢 You missed your chance")
-            st.markdown("## 🍀 Better luck next time!")
-            st.markdown("---")
-            st.markdown("*💔 The heart still throbs, waiting for you...*")
+            st.markdown('<div class="response-text">😔 Oh...</div>', unsafe_allow_html=True)
+            st.markdown('<div class="response-text">😢 You missed your chance</div>', unsafe_allow_html=True)
+            st.markdown('<div class="response-text">🍀 Better luck next time!</div>', unsafe_allow_html=True)
             
-            # Sad rain effect
+            # Rain effect for sad mood
             st.markdown("""
-            <style>
-            @keyframes rain {
-                0% { transform: translateY(-100px); }
-                100% { transform: translateY(100vh); }
-            }
-            </style>
+            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                        pointer-events: none; z-index: -1; overflow: hidden;">
+                <style>
+                    @keyframes rainFall {
+                        0% { transform: translateY(-100px) translateX(var(--start-x)); }
+                        100% { transform: translateY(100vh) translateX(var(--end-x)); }
+                    }
+                    .raindrop {
+                        position: absolute;
+                        width: 2px;
+                        height: 20px;
+                        background: linear-gradient(to bottom, transparent, #888);
+                        animation: rainFall 2s linear infinite;
+                        opacity: 0.6;
+                    }
+                </style>
+                <script>
+                    for(let i=0; i<50; i++) {
+                        const drop = document.createElement('div');
+                        drop.className = 'raindrop';
+                        drop.style.left = Math.random() * 100 + 'vw';
+                        drop.style.setProperty('--start-x', (Math.random() * 40 - 20) + 'px');
+                        drop.style.setProperty('--end-x', (Math.random() * 40 - 20) + 'px');
+                        drop.style.animationDelay = Math.random() * 2 + 's';
+                        document.currentScript.parentElement.appendChild(drop);
+                    }
+                </script>
+            </div>
             """, unsafe_allow_html=True)
         
         # Button to go back
