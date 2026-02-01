@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS with all fixes
+# Custom CSS
 def local_css():
     st.markdown("""
     <style>
@@ -146,45 +146,57 @@ if 'page' not in st.session_state:
 # Apply custom CSS
 local_css()
 
-# ---------- SIMPLE AUTOPLAY MUSIC ----------
-def autoplay_music_simple():
-    """Simple autoplay music that should work reliably"""
-    try:
-        # Read the music file
-        with open("music.mp3", "rb") as f:
-            audio_bytes = f.read()
-            b64 = base64.b64encode(audio_bytes).decode()
-        
-        # Create HTML audio element with autoplay
-        audio_html = f"""
-        <audio id="bgMusic" autoplay loop style="display: none;">
-            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-        </audio>
-        
-        <script>
-        // Get audio element
-        var audio = document.getElementById('bgMusic');
-        
-        // Set volume to 70%
-        audio.volume = 0.7;
-        
-        // Try to play immediately
-        audio.play().catch(function(error) {{
-            console.log("Autoplay prevented:", error);
-            // If autoplay fails, play on first user interaction
-            document.addEventListener('click', function playOnClick() {{
-                audio.play();
-                document.removeEventListener('click', playOnClick);
-            }}, {{once: true}});
-        }});
-        </script>
-        """
-        return audio_html
-    except:
-        return "<!-- Could not load music -->"
-
-# Add the music player
-st.markdown(autoplay_music_simple(), unsafe_allow_html=True)
+# ---------- DIRECT MUSIC AUTOPLAY ----------
+# Load the music file directly
+try:
+    # Read the music file
+    with open("music.mp3", "rb") as f:
+        audio_bytes = f.read()
+    
+    # Encode to base64
+    b64 = base64.b64encode(audio_bytes).decode()
+    
+    # Create HTML audio element with autoplay
+    audio_html = f"""
+    <audio id="valentineMusic" autoplay loop style="display: none;">
+        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+    </audio>
+    
+    <script>
+    // Get the audio element
+    var audio = document.getElementById('valentineMusic');
+    
+    // Set volume
+    audio.volume = 0.7;
+    
+    // Try to play immediately
+    audio.play().catch(function(e) {{
+        console.log("Autoplay failed initially:", e);
+    }});
+    
+    // Play on any user interaction
+    document.addEventListener('click', function playOnInteraction() {{
+        if (audio.paused) {{
+            audio.play();
+        }}
+        // Remove listener after first successful play
+        document.removeEventListener('click', playOnInteraction);
+    }});
+    </script>
+    """
+    
+    # Add the audio to the page
+    st.markdown(audio_html, unsafe_allow_html=True)
+    
+except Exception as e:
+    st.error(f"Could not load music.mp3: {e}")
+    # Add fallback silent audio to avoid errors
+    st.markdown("""
+    <audio id="valentineMusic" style="display: none;"></audio>
+    <script>
+    console.log("Music file not found");
+    </script>
+    """, unsafe_allow_html=True)
 
 # Main app logic
 if st.session_state.page == 'landing':
@@ -295,21 +307,51 @@ elif st.session_state.page == 'no_response':
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# Add a hidden button that forces music to play on click
+# Add a simple play button as last resort
 st.markdown("""
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button onclick="playValentineMusic()" style="
+        background: #FF4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    " title="Play music">▶️</button>
+</div>
+
 <script>
-// Add a click listener to play music if it's not playing
-document.addEventListener('DOMContentLoaded', function() {
-    var audio = document.getElementById('bgMusic');
+function playValentineMusic() {
+    var audio = document.getElementById('valentineMusic');
     if (audio) {
-        // Try to play on any user click
-        document.body.addEventListener('click', function() {
-            if (audio.paused) {
-                audio.play().catch(function(e) {
-                    console.log("Playback failed:", e);
-                });
-            }
-        });
+        audio.play();
+        // Change button to pause
+        event.target.innerHTML = '⏸️';
+        event.target.title = "Pause music";
+        event.target.onclick = function() {
+            audio.pause();
+            this.innerHTML = '▶️';
+            this.title = "Play music";
+            this.onclick = playValentineMusic;
+        };
+    }
+}
+
+// Also try to play when user clicks ANY button
+document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'BUTTON') {
+        var audio = document.getElementById('valentineMusic');
+        if (audio && audio.paused) {
+            setTimeout(function() {
+                audio.play();
+            }, 100);
+        }
     }
 });
 </script>
