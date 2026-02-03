@@ -342,8 +342,15 @@ elif st.session_state.page == 'yes_response':
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Text under GIF
-    st.markdown('<div class="response-text">Another year of you having to put up with me<br><br> I'm so glad i met you, and I am sooooooooooooooo glad that we are together<br><br>I love you so much gullu pullu❤️</div>', 
-               unsafe_allow_html=True)
+    st.markdown(
+    '<div class="response-text">'
+    'Another year of you having to put up with me<br><br>'
+    "I'm so glad i met you, and I am sooooooooooooooo glad that we are together<br><br>"
+    'I love you so much gullu pullu\u2764\uFE0F'
+    '</div>',
+    unsafe_allow_html=True
+    )
+
     
     # Celebration effects
     st.balloons()
