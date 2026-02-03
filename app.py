@@ -340,7 +340,7 @@ elif st.session_state.page == 'yes_response':
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Text under GIF
-    st.markdown('<div class="response-text">Another year of you tolerating me,<br><br>I love you so much gullu pullu ❤️</div>', 
+    st.markdown('<div class="response-text">Another year of you getting to spend time with me,<br><br>I love you so much gullu pullu ❤️</div>', 
                unsafe_allow_html=True)
     
     # Celebration effects
