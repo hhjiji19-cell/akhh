@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import base64
+
 
 # Page configuration
 st.set_page_config(
